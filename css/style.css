@@ -1,32 +1,73 @@
-* {
-    box-sizing: border-box;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
 }
 
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
+.landing {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: #f1f3f4;
+  padding: 30px;
+  border-radius: 10px;
+  width: 300px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
 }
 
 .app {
-    display: flex;
-    height: 100vh;
+  display: flex;
+  height: 100vh;
 }
 
 .sidebar {
-    width: 250px;
-    min-width: 200px;
-    background: #f1f3f4;
-    padding: 20px;
+  width: 220px;
+  background: #f1f3f4;
+  padding: 20px;
 }
 
 .content {
-    flex: 1;
-    padding: 20px;
-    overflow: auto;
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.file {
+  background: #e3e6ea;
+  padding: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        width: 70px;
-    }
+  .sidebar {
+    width: 70px;
+  }
 }
