@@ -1,4 +1,7 @@
-async function login(email, password) {
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
   const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -11,7 +14,10 @@ async function login(email, password) {
   }
 }
 
-async function register(email, password) {
+async function register() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
@@ -20,6 +26,6 @@ async function register(email, password) {
   if (error) {
     alert(error.message);
   } else {
-    alert("Account created! Please login.");
+    window.location.href = "dashboard.html";
   }
 }
