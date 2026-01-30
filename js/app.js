@@ -1,8 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  listAll,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
+/* 🔴 REPLACE WITH YOUR FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
+  apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
   projectId: "YOUR_PROJECT",
   storageBucket: "YOUR_PROJECT.appspot.com"
@@ -13,29 +20,36 @@ const storage = getStorage(app);
 
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
-const grid = document.getElementById("fileGrid");
+const fileGrid = document.getElementById("fileGrid");
 
 uploadBtn.onclick = () => fileInput.click();
 
 fileInput.onchange = async () => {
   const file = fileInput.files[0];
-  const storageRef = ref(storage, file.name);
-  await uploadBytes(storageRef, file);
+  if (!file) return;
+
+  const fileRef = ref(storage, file.name);
+  await uploadBytes(fileRef, file);
   loadFiles();
 };
 
 async function loadFiles() {
-  grid.innerHTML = "";
+  fileGrid.innerHTML = "";
   const listRef = ref(storage);
-  const files = await listAll(listRef);
+  const result = await listAll(listRef);
 
-  files.items.forEach(async fileRef => {
-    const url = await getDownloadURL(fileRef);
+  result.items.forEach(async (item) => {
+    const url = await getDownloadURL(item);
+
     const div = document.createElement("div");
     div.className = "file";
-    div.innerHTML = fileRef.name;
-    div.onclick = () => window.open(url);
-    grid.appendChild(div);
+    div.innerHTML = `
+      <div class="file-icon">📄</div>
+      <div class="file-name">${item.name}</div>
+    `;
+
+    div.onclick = () => window.open(url, "_blank");
+    fileGrid.appendChild(div);
   });
 }
 
