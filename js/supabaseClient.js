@@ -1,4 +1,4 @@
-const SUPABASE_URL = "https://woysaoheokhipqpfhpr.supabase.co";
-const SUPABASE_KEY = "sb_publishable_WbweOMELckXb1bfnEA-g9A_YF3NwmSR";
+const SUPABASE_URL = "https://woysaoheokhipqpfphpr.supabase.co";
+const SUPABASE_KEY = "YOUR_PUBLIC_ANON_KEY_HERE";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
