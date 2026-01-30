@@ -7,7 +7,7 @@ import {
   getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-/* 🔴 REPLACE WITH YOUR FIREBASE CONFIG */
+/* 🔴 REPLACE WITH YOUR REAL FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -30,25 +30,24 @@ fileInput.onchange = async () => {
 
   const fileRef = ref(storage, file.name);
   await uploadBytes(fileRef, file);
+
+  alert("Upload successful!");
   loadFiles();
 };
 
 async function loadFiles() {
   fileGrid.innerHTML = "";
-  const listRef = ref(storage);
-  const result = await listAll(listRef);
+
+  const result = await listAll(ref(storage));
 
   result.items.forEach(async (item) => {
     const url = await getDownloadURL(item);
 
     const div = document.createElement("div");
     div.className = "file";
-    div.innerHTML = `
-      <div class="file-icon">📄</div>
-      <div class="file-name">${item.name}</div>
-    `;
-
+    div.innerText = item.name;
     div.onclick = () => window.open(url, "_blank");
+
     fileGrid.appendChild(div);
   });
 }
