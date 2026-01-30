@@ -32,3 +32,15 @@ window.register = async () => {
   );
   window.location.href = "dashboard.html";
 };
+async function login(email, password) {
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    window.location.href = "dashboard.html";
+  }
+}
