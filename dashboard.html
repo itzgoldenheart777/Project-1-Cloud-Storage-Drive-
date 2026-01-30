@@ -1,36 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>MyDrive</title>
+  <title>MyDrive Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- TOP BAR -->
 <header class="topbar">
-  <div class="logo">MyDrive</div>
-  <input class="search" type="text" placeholder="Search in Drive">
-  <div class="profile">👤</div>
+  <h2>MyDrive</h2>
+  <input placeholder="Search files">
 </header>
 
-<!-- MAIN LAYOUT -->
 <div class="layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <button id="uploadBtn" class="new-btn">+ New</button>
-
-    <nav>
-      <a class="active">📁 My Drive</a>
-      <a>👥 Shared</a>
-      <a>🗑 Trash</a>
-    </nav>
+    <button id="uploadBtn">+ New</button>
   </aside>
 
-  <!-- CONTENT -->
   <main class="content">
-    <h2>My Drive</h2>
+    <h3>My Drive</h3>
     <div id="fileGrid" class="grid"></div>
   </main>
 
@@ -38,6 +26,8 @@
 
 <input type="file" id="fileInput" hidden>
 
+<!-- 🔴 THIS LINE IS CRITICAL -->
 <script type="module" src="js/app.js"></script>
+
 </body>
 </html>
