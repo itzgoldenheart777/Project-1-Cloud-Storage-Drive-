@@ -1,8 +1,7 @@
+const SUPABASE_URL = "https://woys.supabase.co";
+const SUPABASE_KEY = "sb_publishable_WbweOMELckXb1bfnEA-g9A_YF3NwmSR";
 
-const SUPABASE_URL = "https://thqbgvosalffvyptzxws.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
-
-const supabase = supabase.createClient(
+const supabase = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
