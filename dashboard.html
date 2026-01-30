@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MyDrive Dashboard</title>
+  <title>MyDrive</title>
   <link rel="stylesheet" href="css/style.css">
-
 </head>
 <body>
+
+<header class="topbar">
+  <h2>MyDrive</h2>
+  <input type="text" placeholder="Search files">
+</header>
+
+<div class="container">
   <aside class="sidebar">
-    <h2>MyDrive</h2>
-    <button>+ New</button>
+    <button id="uploadBtn">+ New</button>
+    <nav>
+      <a>My Drive</a>
+      <a>Shared</a>
+      <a>Trash</a>
+    </nav>
   </aside>
 
-  <main class="files">
-    <div class="file">📄 Document.pdf</div>
-    <div class="file">📁 Projects</div>
-    <div class="file">🖼 Image.png</div>
+  <main class="content">
+    <div id="fileGrid" class="grid"></div>
   </main>
+</div>
+
+<input type="file" id="fileInput" hidden>
+
+<script src="js/app.js"></script>
 </body>
 </html>
