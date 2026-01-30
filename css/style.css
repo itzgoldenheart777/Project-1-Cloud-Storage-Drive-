@@ -1,73 +1,13 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
-
-.landing {
-  text-align: center;
-  margin-top: 100px;
-}
-
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.card {
-  background: #f1f3f4;
-  padding: 30px;
-  border-radius: 10px;
-  width: 300px;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-.app {
-  display: flex;
-  height: 100vh;
-}
-
-.sidebar {
-  width: 220px;
-  background: #f1f3f4;
-  padding: 20px;
-}
-
-.content {
-  flex: 1;
-  padding: 20px;
-  overflow: auto;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 15px;
-}
-
-.file {
-  background: #e3e6ea;
-  padding: 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: center;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 70px;
-  }
-}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #f8f9fa; }
+.landing { text-align: center; margin-top: 100px; }
+.btn { padding: 12px 24px; background: #1a73e8; color: white; border-radius: 6px; text-decoration: none; }
+.center { display: flex; justify-content: center; align-items: center; height: 100vh; }
+.card { background: #f1f3f4; padding: 30px; border-radius: 10px; width: 300px; }
+input { width: 100%; padding: 10px; margin: 10px 0; }
+button { width: 100%; padding: 10px; margin-top: 10px; cursor: pointer; background: #1a73e8; color: white; border: none; border-radius: 5px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; height: 64px; background: white; padding: 0 20px; border-bottom: 1px solid #dadce0; }
+.container { padding: 20px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+.file { background: white; padding: 20px; border-radius: 8px; cursor: pointer; text-align: center; border: 1px solid #dadce0; }
+@media (max-width: 768px) { .topbar { height: 56px; } .container { padding: 10px; } .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } }
