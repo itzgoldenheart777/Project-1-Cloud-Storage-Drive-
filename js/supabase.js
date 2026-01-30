@@ -1,8 +1,3 @@
-const supabase = supabase.createClient(
-  "https://YOUR_PROJECT_ID.supabase.co",
-  "PUBLIC_ANON_KEY"
-);
-
 // Upload
 async function uploadFile(file) {
   const { data, error } = await supabase
