@@ -46,4 +46,21 @@ async function logout() {
     window.location.href = "login.html";
 }
 
+async function checkUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        window.location.href = "login.html";
+    }
+}
+
+checkUser();
+
+async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
+}
+
 loadFiles();
+
+
