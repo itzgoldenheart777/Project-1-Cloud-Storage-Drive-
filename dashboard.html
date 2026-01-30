@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard - MyDrive</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyDrive</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<div class="app">
+<header class="topbar">
+  <h2>MyDrive</h2>
+  <button onclick="logout()">Logout</button>
+</header>
 
-  <aside class="sidebar">
-    <button onclick="triggerUpload()">+ Upload</button>
-    <button onclick="logout()">Logout</button>
-  </aside>
+<div class="container">
+  <button id="uploadBtn">Upload File</button>
+  <input type="file" id="fileInput" hidden>
 
-  <main class="content">
-    <h2>My Files</h2>
-    <div id="fileGrid" class="grid"></div>
-  </main>
-
+  <div id="fileGrid"></div>
 </div>
 
-<input type="file" id="fileInput" hidden>
-
+<!-- SUPABASE CDN -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<!-- YOUR JS -->
 <script src="js/supabaseClient.js"></script>
 <script src="js/dashboard.js"></script>
 
