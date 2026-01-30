@@ -1,25 +1,21 @@
+const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const fileGrid = document.getElementById("fileGrid");
 
-checkAuth();
-loadFiles();
-
-async function checkAuth() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    window.location.href = "login.html";
-  }
-}
-
-function triggerUpload() {
-  fileInput.click();
-}
+uploadBtn.onclick = () => fileInput.click();
 
 fileInput.onchange = async () => {
   const file = fileInput.files[0];
   if (!file) return;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+
+  if (!user) {
+    alert("Please login first");
+    window.location.href = "login.html";
+    return;
+  }
 
   const filePath = `${user.id}/${Date.now()}-${file.name}`;
 
@@ -30,7 +26,7 @@ fileInput.onchange = async () => {
   if (error) {
     alert(error.message);
   } else {
-    alert("Upload successful");
+    alert("Uploaded successfully");
     loadFiles();
   }
 };
@@ -38,18 +34,18 @@ fileInput.onchange = async () => {
 async function loadFiles() {
   fileGrid.innerHTML = "";
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) return;
 
-  const { data, error } = await supabase.storage
+  const { data } = await supabase.storage
     .from("files")
     .list(user.id);
 
-  if (error) return;
-
   data.forEach(file => {
     const div = document.createElement("div");
-    div.className = "file";
     div.innerText = file.name;
+    div.className = "file";
 
     div.onclick = async () => {
       const { data } = supabase.storage
@@ -67,3 +63,5 @@ async function logout() {
   await supabase.auth.signOut();
   window.location.href = "login.html";
 }
+
+loadFiles();
