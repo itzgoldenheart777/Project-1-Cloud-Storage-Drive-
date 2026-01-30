@@ -1,44 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyDrive</title>
+  <title>Dashboard - MyDrive</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<header class="topbar">
-  <button class="menu-btn">☰</button>
-  <input class="search" placeholder="Search in Drive">
-  <div class="profile">S</div>
-</header>
-
 <div class="app">
 
   <aside class="sidebar">
-    <button id="uploadBtn" class="upload-btn">＋ New</button>
-    <nav>
-      <a class="active">My Drive</a>
-      <a>Shared</a>
-      <a>Bin</a>
-    </nav>
+    <button onclick="triggerUpload()">+ Upload</button>
+    <button onclick="logout()">Logout</button>
   </aside>
 
   <main class="content">
+    <h2>My Files</h2>
     <div id="fileGrid" class="grid"></div>
   </main>
 
 </div>
 
 <input type="file" id="fileInput" hidden>
-<script type="module" src="js/app.js"></script>
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
-<script src="js/upload.js"></script>
 <script src="js/dashboard.js"></script>
-
-
 
 </body>
 </html>
