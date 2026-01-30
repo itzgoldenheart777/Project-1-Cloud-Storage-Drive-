@@ -26,6 +26,6 @@ async function register() {
   if (error) {
     alert(error.message);
   } else {
-    alert("Registered successfully. Please login.");
+    alert("Registered successfully!");
   }
 }
