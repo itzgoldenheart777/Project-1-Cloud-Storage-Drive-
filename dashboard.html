@@ -1,33 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Drive</title>
+  <title>MyDrive - Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
 
 <header>
-  <h2>My Drive</h2>
-  <div class="user-area">
-    <span id="userEmail"></span>
-    <button onclick="logout()">Logout</button>
-  </div>
+  <h2>MyDrive</h2>
+  <span id="userEmail"></span>
+  <button onclick="logout()">Logout</button>
 </header>
 
-<div class="toolbar">
-  <input type="file" id="fileInput" multiple>
-  <button onclick="createFolder()">New Folder</button>
-</div>
+<input type="file" id="fileInput" multiple>
+<button onclick="createFolder()">New Folder</button>
 
-<div id="fileContainer" class="grid"></div>
+<div id="fileGrid"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
 <script src="js/dashboard.js"></script>
-<script src="js/storageService.js"></script>
-<script src="js/uiRenderer.js"></script>
-<script src="js/fileActions.js"></script>
-<script src="js/dragdrop.js"></script>
 
 </body>
 </html>
