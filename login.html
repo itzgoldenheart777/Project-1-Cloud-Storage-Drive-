@@ -1,27 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Login - MyDrive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="css/login.css">
 </head>
-
 <body>
 
-<h1>Login / Register</h1>
+  <div class="card">
+    <h2>Login / Register</h2>
 
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
 
-<p>
-  <a href="#" onclick="forgotPassword()">Forgot Password?</a>
-</p>
+    <button id="loginBtn">Login</button>
+    <button id="registerBtn">Register</button>
 
-<button onclick="login()">Login</button>
-<button onclick="register()">Register</button>
+    <a href="#" id="forgotBtn">Forgot Password?</a>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabaseClient.js"></script>
-<script src="js/login.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    document.getElementById("loginBtn").onclick = () => {
+      login(
+        document.getElementById("email").value,
+        document.getElementById("password").value
+      );
+    };
+
+    document.getElementById("registerBtn").onclick = () => {
+      register(
+        document.getElementById("email").value,
+        document.getElementById("password").value
+      );
+    };
+
+    document.getElementById("forgotBtn").onclick = () => {
+      sendResetEmail(document.getElementById("email").value);
+    };
+  </script>
 
 </body>
 </html>
