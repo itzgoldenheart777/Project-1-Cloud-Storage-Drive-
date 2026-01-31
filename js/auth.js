@@ -1,73 +1,37 @@
-// js/auth.js
+let isLogin = true;
 
-const auth = window.supabaseClient.auth;
+function toggleMode() {
+  isLogin = !isLogin;
+  document.getElementById("formTitle").innerText = isLogin ? "Login" : "Register";
+}
 
-// LOGIN
-async function login(email, password) {
-  try {
-    const { error } = await auth.signInWithPassword({ email, password });
-    if (error) throw error;
+async function handleAuth() {
+  const email = email.value;
+  const password = password.value;
 
+  if (isLogin) {
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) return alert(error.message);
     window.location.href = "dashboard.html";
-  } catch (err) {
-    alert(err.message);
+  } else {
+    const { error } = await supabaseClient.auth.signUp({ email, password });
+    if (error) return alert(error.message);
+    alert("Check your email to confirm.");
   }
 }
 
-// REGISTER
-async function register(email, password) {
-  try {
-    const { error } = await auth.signUp({ email, password });
-    if (error) throw error;
-
-    alert("Registration successful. Please login.");
-  } catch (err) {
-    alert(err.message);
-  }
+async function resetPassword() {
+  const emailVal = document.getElementById("email").value;
+  await supabaseClient.auth.resetPasswordForEmail(emailVal, {
+    redirectTo: window.location.origin + "/reset.html"
+  });
+  alert("Reset link sent.");
 }
 
-// LOGOUT
-async function logout() {
-  await auth.signOut();
+async function updatePassword() {
+  const newPassword = document.getElementById("newPassword").value;
+  const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+  if (error) return alert(error.message);
+  alert("Password updated.");
   window.location.href = "login.html";
-}
-
-// SEND RESET EMAIL
-async function sendResetEmail(email) {
-  if (!email) return alert("Enter email first.");
-
-  try {
-    const { error } = await auth.resetPasswordForEmail(email, {
-      redirectTo:
-        "https://itzgoldenheart777.github.io/Project-1-Cloud-Storage-Drive/reset.html"
-    });
-
-    if (error) throw error;
-
-    alert("Password reset link sent.");
-  } catch (err) {
-    alert(err.message);
-  }
-}
-
-// UPDATE PASSWORD
-async function updatePassword(newPassword) {
-  try {
-    const { error } = await auth.updateUser({ password: newPassword });
-    if (error) throw error;
-
-    alert("Password updated successfully.");
-    window.location.href = "login.html";
-  } catch (err) {
-    alert(err.message);
-  }
-}
-
-// REQUIRE LOGIN
-async function requireAuth() {
-  const { data } = await auth.getSession();
-
-  if (!data.session) {
-    window.location.href = "login.html";
-  }
 }
