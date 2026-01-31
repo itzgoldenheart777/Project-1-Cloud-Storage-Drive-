@@ -38,12 +38,11 @@ async function forgotPassword() {
     return;
   }
 
-  const { error } = await window.supabaseClient.auth.resetPasswordForEmail(
-    email,
-    {
-      redirectTo: "https://itzgoldenheart777.github.io/Project-1-Cloud-Storage-Drive/reset.html"
-    }
-  );
+  const { error } =
+    await window.supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo:
+        "https://itzgoldenheart777.github.io/Project-1-Cloud-Storage-Drive/reset.html"
+    });
 
   if (error) {
     alert(error.message);
