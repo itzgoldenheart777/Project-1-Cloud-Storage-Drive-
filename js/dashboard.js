@@ -95,20 +95,54 @@ async function loadRecentFiles() {
 }
 
 // --- Rendering ---
-function renderFiles(files, containerId) {
-    const container = document.getElementById(containerId);
-    if(!container) return;
-    container.innerHTML = "";
+async function renderFileCard(file) {
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!files || files.length === 0) {
-        container.innerHTML = "<p style='color:#888; grid-column: 1/-1;'>No files found.</p>";
-        return;
+    const { data } = supabase.storage
+        .from("files")
+        .getPublicUrl(`${user.id}/${file.name}`);
+
+    const publicURL = data.publicUrl;
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    let previewHTML = "";
+
+    if (["png","jpg","jpeg","gif","webp"].includes(extension)) {
+        previewHTML = `<img src="${publicURL}" class="file-thumb">`;
+    } 
+    else if (extension === "pdf") {
+        previewHTML = `
+            <div class="pdf-preview">
+                <span class="material-icons">picture_as_pdf</span>
+            </div>
+        `;
+    } 
+    else {
+        previewHTML = `
+            <div class="file-icon">
+                <span class="material-icons">insert_drive_file</span>
+            </div>
+        `;
     }
 
-    files.forEach(file => {
-        if(file.name === ".emptyFolderPlaceholder") return;
+    return `
+    <div class="file-card">
+        ${previewHTML}
+        <div class="file-footer">
+            <span class="file-name">${file.name}</span>
+            <div class="menu-btn" onclick="toggleMenu(this)">⋮</div>
+            <div class="dropdown hidden">
+                <div onclick="openFile('${file.name}')">Open</div>
+                <div onclick="renameFile('${file.name}')">Rename</div>
+                <div onclick="moveFile('${file.name}')">Move</div>
+                <div onclick="deleteFile('${file.name}')">Delete</div>
+            </div>
+        </div>
+    </div>
+    `;
+}
 
-        const isFolder = !file.metadata; 
         
         // Icon Selection
         let icon = "article";
