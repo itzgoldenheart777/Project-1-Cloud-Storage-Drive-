@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MyDrive Dashboard</title>
-  <link rel="stylesheet" href="css/style.css">
+    <title>MyDrive Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-  
+<body>
+
+<header>
+    <h2>MyDrive</h2>
+    <button onclick="logout()">Logout</button>
+</header>
+
+<div class="container">
+    <button id="uploadBtn">Upload File</button>
+    <input type="file" id="fileInput" hidden>
+    <div id="fileGrid"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/auth.js"></script>
-  
-<body>
-
-  <header class="topbar">
-    <h2>MyDrive</h2>
-    <button onclick="logout()">Logout</button>
-  </header>
-
-  <div class="container">
-    <button id="uploadBtn">Upload File</button>
-    <input type="file" id="fileInput" hidden>
-    <div id="fileGrid" class="grid"></div>
-  </div>
 
 </body>
 </html>
