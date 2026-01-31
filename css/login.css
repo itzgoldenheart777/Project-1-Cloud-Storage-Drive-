@@ -11,43 +11,29 @@ body {
 .card {
   background: white;
   padding: 40px;
-  width: 350px;
+  width: 320px;
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.2);
   text-align: center;
 }
 
-.card h2 {
-  margin-bottom: 25px;
-  color: #202124;
-}
-
 input {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid #dadce0;
-  font-size: 14px;
-}
-
-input:focus {
-  outline: none;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+  border-radius: 6px;
+  border: 1px solid #ddd;
 }
 
 button {
   width: 100%;
-  padding: 12px;
-  margin-top: 8px;
-  border: none;
-  border-radius: 8px;
+  padding: 10px;
   background: #1a73e8;
   color: white;
-  font-weight: 600;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s;
+  margin-bottom: 10px;
 }
 
 button:hover {
@@ -56,12 +42,7 @@ button:hover {
 
 a {
   display: block;
-  margin-top: 12px;
-  font-size: 13px;
+  margin-top: 10px;
   color: #1a73e8;
   text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
 }
