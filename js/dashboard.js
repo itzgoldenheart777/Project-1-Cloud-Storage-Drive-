@@ -310,3 +310,37 @@ async function changePassword() {
     alert("Password updated successfully!");
   }
 }
+
+async function moveFile(fileName) {
+    const folder = prompt("Move to folder name:");
+    if (!folder) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const oldPath = `${user.id}/${fileName}`;
+    const newPath = `${user.id}/${folder}/${fileName}`;
+
+    const { error } = await supabase.storage
+        .from("files")
+        .move(oldPath, newPath);
+
+    if (error) alert(error.message);
+
+    loadFiles();
+}
+async function renameFile(oldName) {
+    const newName = prompt("New file name:");
+    if (!newName) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    await supabase.storage
+        .from("files")
+        .move(
+            `${user.id}/${oldName}`,
+            `${user.id}/${newName}`
+        );
+
+    loadFiles();
+}
+.list(user.id, { limit: 5, sortBy: { column: "created_at", order: "desc" } })
