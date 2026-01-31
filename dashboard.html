@@ -1,55 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MyDrive Dashboard</title>
-    <link rel="stylesheet" href="css/dashboard.css">
+  <title>MyDrive</title>
+  <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <h2 class="logo">☁ MyDrive</h2>
+<!-- HEADER -->
+<header class="topbar">
+  <div class="logo">☁ MyDrive</div>
+
+  <input type="text" class="search" placeholder="Search in Drive">
+
+  <div class="profile" onclick="toggleProfileMenu()">
+    <img id="profilePic" src="https://i.pravatar.cc/40" />
+  </div>
+
+  <div class="profile-menu" id="profileMenu">
+    <p id="userEmail"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <button class="new-btn">+ New</button>
     <ul>
-        <li class="active">Home</li>
-        <li>Starred</li>
-        <li>Shared</li>
-        <li>Trash</li>
+      <li class="active">Home</li>
+      <li>My Drive</li>
+      <li>Shared</li>
+      <li>Starred</li>
+      <li>Trash</li>
     </ul>
-</div>
+  </aside>
 
-<!-- Main Content -->
-<div class="main">
+  <!-- CONTENT -->
+  <main class="content">
 
-    <!-- Top Bar -->
-    <div class="topbar">
-        <input type="text" placeholder="Search files...">
-
-        <div class="profile" onclick="toggleProfileMenu()">
-            <img src="https://i.pravatar.cc/40" class="avatar">
-            <div class="profile-menu" id="profileMenu">
-                <p id="userEmail">Loading...</p>
-                <hr>
-                <button onclick="logout()">Logout</button>
-            </div>
-        </div>
+    <div class="content-header">
+      <h2>My Files</h2>
+      <button id="uploadBtn">Upload File</button>
+      <input type="file" id="fileInput" hidden>
     </div>
 
-    <!-- Upload Button -->
-    <div class="upload-section">
-        <button id="uploadBtn">+ Upload File</button>
-        <input type="file" id="fileInput" hidden>
-    </div>
-
-    <!-- File Grid -->
     <div id="fileGrid" class="file-grid"></div>
+
+  </main>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
 <script src="js/dashboard.js"></script>
-<script src="js/auth.js"></script>
 
 </body>
 </html>
-
