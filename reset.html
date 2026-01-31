@@ -1,45 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Reset Password</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
-<h2>Set New Password</h2>
+  <div class="card">
+    <h2>Set New Password</h2>
+    <input id="newPassword" type="password" placeholder="New Password">
+    <button id="updateBtn">Update Password</button>
+  </div>
 
-<input type="password" id="newPassword" placeholder="New Password">
-<button onclick="updatePassword()">Update Password</button>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/auth.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabaseClient.js"></script>
-
-<script>
-async function updatePassword() {
-  const password = document.getElementById("newPassword").value;
-
-  const { error } = await window.supabaseClient.auth.updateUser({
-    password: password
-  });
-
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Password updated successfully!");
-    window.location.href = "login.html";
-  }
-}
-</script>
-
-<script>
-window.addEventListener("load", async () => {
-  const { data, error } = await window.supabaseClient.auth.getSession();
-
-  if (!data.session) {
-    alert("Invalid or expired link.");
-    window.location.href = "login.html";
-  }
-});
-</script>
+  <script>
+    document.getElementById("updateBtn").onclick = () => {
+      updatePassword(document.getElementById("newPassword").value);
+    };
+  </script>
 
 </body>
 </html>
