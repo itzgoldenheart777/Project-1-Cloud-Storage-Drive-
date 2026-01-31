@@ -1,51 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard - MyDrive</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <title>Drive</title>
   <link rel="stylesheet" href="css/dashboard.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
 
 <header>
-  <h2>MyDrive</h2>
-  <button onclick="logout()">Logout</button>
+  <h2>My Drive</h2>
+  <div class="user-area">
+    <span id="userEmail"></span>
+    <button onclick="logout()">Logout</button>
+  </div>
 </header>
 
-<div class="main-layout">
-
-  <aside class="sidebar">
-    <div class="nav-item" onclick="switchTab('home')">
-      <span class="material-icons">home</span> Home
-    </div>
-    <div class="nav-item" onclick="switchTab('drive')">
-      <span class="material-icons">folder</span> My Drive
-    </div>
-  </aside>
-
-  <main class="content">
-    <div id="breadcrumb" class="breadcrumb"></div>
-
-    <div id="dropZone">Drag & Drop Files Here</div>
-
-    <input type="file" id="fileInput" hidden>
-
-    <div id="fileGrid" class="file-grid"></div>
-  </main>
-
+<div class="toolbar">
+  <input type="file" id="fileInput" multiple>
+  <button onclick="createFolder()">New Folder</button>
 </div>
+
+<div id="fileContainer" class="grid"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
-<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
 <script src="js/storageService.js"></script>
 <script src="js/uiRenderer.js"></script>
 <script src="js/fileActions.js"></script>
 <script src="js/dragdrop.js"></script>
-<script src="js/dashboard.js"></script>
 
 </body>
 </html>
