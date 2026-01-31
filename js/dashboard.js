@@ -72,13 +72,19 @@ async function openFile(name) {
 async function deleteFile(name) {
   const { data: { user } } = await window.supabaseClient.auth.getUser();
 
-  await window.supabaseClient
+  const { error } = await window.supabaseClient
     .storage
     .from("files")
     .remove([`${user.id}/${name}`]);
 
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
   loadFiles();
 }
+
 
 function toggleProfileMenu() {
   const menu = document.getElementById("profileMenu");
