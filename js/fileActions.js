@@ -1,18 +1,10 @@
-// js/fileActions.js
-
-async function handleDelete(fullPath, refresh) {
-  if (!confirm("Delete this file?")) return;
-
-  await deleteFile(fullPath);
-  refresh();
+async function deleteFile(id, path) {
+  await supabaseClient.storage.from("drive").remove([path]);
+  await supabaseClient.from("files").delete().eq("id", id);
+  loadFiles();
 }
 
-async function handleRename(oldPath, newName, refresh) {
-  const ext = oldPath.split(".").pop();
-  const basePath = oldPath.substring(0, oldPath.lastIndexOf("/") + 1);
-
-  const newPath = `${basePath}${newName}.${ext}`;
-
-  await moveFile(oldPath, newPath);
-  refresh();
+async function renameFile(id, newName) {
+  await supabaseClient.from("files").update({ name: newName }).eq("id", id);
+  loadFiles();
 }
