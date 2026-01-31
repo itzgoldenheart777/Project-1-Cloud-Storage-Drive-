@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login - MyDrive</title>
-    <link rel="stylesheet" href="css/login.css">
-
+  <title>Login - MyDrive</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="center">
 
-<div class="card">
-    <h2>Login / Register</h2>
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <p style="text-align:center; margin-top:10px;">
+<body>
+
+<h1>Login / Register</h1>
+
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
+<p>
   <a href="#" onclick="forgotPassword()">Forgot Password?</a>
 </p>
 
-    <button onclick="login()">Login</button>
-    <button onclick="register()">Register</button>
-</div>
+<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
 <script src="js/login.js"></script>
-
 
 </body>
 </html>
