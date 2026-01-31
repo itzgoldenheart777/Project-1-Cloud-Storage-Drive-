@@ -1,25 +1,25 @@
-// js/dashboard.js
+async function init() {
+  const { data } = await supabaseClient.auth.getSession();
+  if (!data.session) window.location.href = "login.html";
 
-let currentPath = "";
+  document.getElementById("userEmail").innerText =
+    data.session.user.email;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await requireAuth();
-  await loadFiles();
-
-  initDragDrop(() => currentPath, loadFiles);
-
-  document.getElementById("breadcrumb").addEventListener("click", e => {
-    if (e.target.dataset.path !== undefined) {
-      currentPath = e.target.dataset.path;
-      loadFiles();
-    }
-  });
-});
+  loadFiles();
+}
 
 async function loadFiles() {
-  const userId = await getUserId();
-  const files = await listFiles(currentPath);
-
-  renderBreadcrumb(currentPath);
-  renderFiles(files, currentPath, userId);
+  const { data } = await supabaseClient.from("files").select("*");
+  renderFiles(data);
 }
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+document.getElementById("fileInput").addEventListener("change", e => {
+  [...e.target.files].forEach(file => uploadFile(file));
+});
+
+init();
