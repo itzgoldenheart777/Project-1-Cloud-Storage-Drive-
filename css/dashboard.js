@@ -138,3 +138,16 @@ async function logout() {
   await supabaseClient.auth.signOut();
   location.href = "login.html";
 }
+
+async function createFolder() {
+    const folderName = prompt("Folder name:");
+    if (!folderName) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    await supabase.storage
+        .from("files")
+        .upload(`${user.id}/${folderName}/.keep`, new Blob([""]));
+
+    loadFiles();
+}
