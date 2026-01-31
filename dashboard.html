@@ -12,7 +12,7 @@
 
     <header class="topbar">
         <div class="logo-area">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" alt="Logo" width="40">
+            <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Logo" width="40" height="40">
             <span class="logo-text">Drive</span>
         </div>
 
@@ -26,10 +26,12 @@
             <span class="material-icons-outlined icon-btn">help_outline</span>
             <span class="material-icons-outlined icon-btn">settings</span>
             <div class="profile-container" onclick="toggleProfileMenu()">
-                <img id="profilePic" src="https://i.pravatar.cc/150" alt="Profile" class="profile-img">
+                <img id="profilePic" src="https://lh3.googleusercontent.com/ogw/AOLn63E" 
+                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+                     alt="Profile" class="profile-img">
             </div>
             <div id="profileMenu" class="profile-dropdown hidden">
-                <p id="userEmail" class="user-email">user@example.com</p>
+                <p id="userEmail" class="user-email">Loading...</p>
                 <button onclick="logout()" class="logout-btn">
                     <span class="material-icons-outlined">logout</span> Sign out
                 </button>
@@ -86,11 +88,8 @@
             <div class="toolbar">
                 <h2 id="pageTitle">Home</h2>
                 <div class="toolbar-actions">
-                    <button class="icon-btn" onclick="createFolder()">
+                    <button class="icon-btn" onclick="createFolder()" title="New Folder">
                         <span class="material-icons-outlined">create_new_folder</span>
-                    </button>
-                    <button class="icon-btn">
-                        <span class="material-icons-outlined">info</span>
                     </button>
                 </div>
             </div>
@@ -110,6 +109,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabaseClient.js"></script> <script src="js/dashboard.js"></script>
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/dashboard.js"></script>
 </body>
 </html>
