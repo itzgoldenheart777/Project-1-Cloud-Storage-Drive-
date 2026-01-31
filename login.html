@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login - Cloud Drive</title>
-  <meta charset="UTF-8" />
+  <title>Login - MyDrive</title>
   <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
-  <div class="card">
-    <h2 id="formTitle">Login</h2>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+<h1>Login / Register</h1>
 
-    <button onclick="handleAuth()">Continue</button>
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
 
-    <a href="#" onclick="toggleMode()">Create account</a>
-    <a href="#" onclick="resetPassword()">Forgot password?</a>
-  </div>
+<p>
+  <a href="#" onclick="forgotPassword()">Forgot Password?</a>
+</p>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/auth.js"></script>
+<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/login.js"></script>
+
 </body>
 </html>
