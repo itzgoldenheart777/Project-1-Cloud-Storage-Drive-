@@ -8,36 +8,37 @@
 <body>
 
 <header class="topbar">
+
   <div class="logo">☁ MyDrive</div>
 
-  <input type="text" class="search" placeholder="Search in Drive">
+  <input type="text" id="searchInput" class="search" placeholder="Search in Drive">
 
   <div class="profile-section">
-      <img src="https://i.pravatar.cc/40" onclick="toggleProfileMenu()" class="profile-pic">
+      <img id="profilePic" class="profile-pic" src="https://i.pravatar.cc/40">
       <div id="profileMenu" class="profile-menu">
           <p id="userEmail"></p>
           <button onclick="logout()">Logout</button>
       </div>
   </div>
+
 </header>
 
 <div class="layout">
 
   <aside class="sidebar">
-      <button class="new-btn">+ New</button>
-      <div class="nav active">Home</div>
-      <div class="nav">My Drive</div>
-      <div class="nav">Shared with me</div>
-      <div class="nav">Recent</div>
-      <div class="nav">Starred</div>
-      <div class="nav">Trash</div>
+      <button class="new-btn" onclick="createFolder()">+ New Folder</button>
+
+      <div class="nav active" onclick="loadHome()">Home</div>
+      <div class="nav" onclick="loadMyDrive()">My Drive</div>
+      <div class="nav" onclick="loadRecent()">Recent</div>
+      <div class="nav" onclick="loadTrash()">Trash</div>
   </aside>
 
   <main class="main">
 
       <div class="toolbar">
-          <h2>My Drive</h2>
-          <button id="uploadBtn">Upload</button>
+          <h2 id="viewTitle">My Drive</h2>
+          <button onclick="document.getElementById('fileInput').click()">Upload</button>
           <input type="file" id="fileInput" hidden>
       </div>
 
