@@ -1,56 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>MyDrive</title>
-  <link rel="stylesheet" href="css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyDrive - Cloud Storage</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 </head>
 <body>
 
-<header class="topbar">
+    <header class="topbar">
+        <div class="logo-area">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" alt="Logo" width="40">
+            <span class="logo-text">Drive</span>
+        </div>
 
-  <div class="logo">☁ MyDrive</div>
+        <div class="search-area">
+            <span class="material-icons-outlined search-icon">search</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search in Drive">
+            <span class="material-icons-outlined filter-icon">tune</span>
+        </div>
 
-  <input type="text" id="searchInput" class="search" placeholder="Search in Drive">
+        <div class="profile-area">
+            <span class="material-icons-outlined icon-btn">help_outline</span>
+            <span class="material-icons-outlined icon-btn">settings</span>
+            <div class="profile-container" onclick="toggleProfileMenu()">
+                <img id="profilePic" src="https://i.pravatar.cc/150" alt="Profile" class="profile-img">
+            </div>
+            <div id="profileMenu" class="profile-dropdown hidden">
+                <p id="userEmail" class="user-email">user@example.com</p>
+                <button onclick="logout()" class="logout-btn">
+                    <span class="material-icons-outlined">logout</span> Sign out
+                </button>
+            </div>
+        </div>
+    </header>
 
-  <div class="profile-section">
-      <img id="profilePic" class="profile-pic" src="https://i.pravatar.cc/40">
-      <div id="profileMenu" class="profile-menu">
-          <p id="userEmail"></p>
-          <button onclick="logout()">Logout</button>
-      </div>
-  </div>
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="new-btn-container">
+                <button class="new-btn" onclick="document.getElementById('fileInput').click()">
+                    <span class="material-icons-outlined add-icon">add</span>
+                    <span>New</span>
+                </button>
+                <input type="file" id="fileInput" hidden>
+            </div>
 
-</header>
+            <nav class="nav-menu">
+                <div class="nav-item active" id="navHome" onclick="switchTab('home')">
+                    <span class="material-icons-outlined">home</span>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" id="navMyDrive" onclick="switchTab('mydrive')">
+                    <span class="material-icons-outlined">hard_drive</span>
+                    <span>My Drive</span>
+                </div>
+                <div class="nav-item">
+                    <span class="material-icons-outlined">people</span>
+                    <span>Shared with me</span>
+                </div>
+                <div class="nav-item">
+                    <span class="material-icons-outlined">schedule</span>
+                    <span>Recent</span>
+                </div>
+                <div class="nav-item">
+                    <span class="material-icons-outlined">star</span>
+                    <span>Starred</span>
+                </div>
+                <div class="nav-item">
+                    <span class="material-icons-outlined">delete</span>
+                    <span>Trash</span>
+                </div>
+            </nav>
 
-<div class="layout">
+            <div class="storage-info">
+                <span class="material-icons-outlined">cloud_queue</span>
+                <p>Storage used</p>
+                <div class="progress-bar"><div class="fill" style="width: 40%"></div></div>
+                <small>6.4 GB of 15 GB used</small>
+            </div>
+        </aside>
 
-  <aside class="sidebar">
-      <button class="new-btn" onclick="createFolder()">+ New Folder</button>
+        <main class="content-area">
+            <div class="toolbar">
+                <h2 id="pageTitle">Home</h2>
+                <div class="toolbar-actions">
+                    <button class="icon-btn" onclick="createFolder()">
+                        <span class="material-icons-outlined">create_new_folder</span>
+                    </button>
+                    <button class="icon-btn">
+                        <span class="material-icons-outlined">info</span>
+                    </button>
+                </div>
+            </div>
 
-      <div class="nav active" onclick="loadHome()">Home</div>
-      <div class="nav" onclick="loadMyDrive()">My Drive</div>
-      <div class="nav" onclick="loadRecent()">Recent</div>
-      <div class="nav" onclick="loadTrash()">Trash</div>
-  </aside>
+            <div id="suggestedSection" class="section-container">
+                <h3>Suggested</h3>
+                <div class="file-grid" id="suggestedGrid">
+                    </div>
+            </div>
 
-  <main class="main">
+            <div class="section-container">
+                <h3 id="filesTitle">Files</h3>
+                <div class="file-grid" id="fileGrid">
+                    </div>
+            </div>
+        </main>
+    </div>
 
-      <div class="toolbar">
-          <h2 id="viewTitle">My Drive</h2>
-          <button onclick="document.getElementById('fileInput').click()">Upload</button>
-          <input type="file" id="fileInput" hidden>
-      </div>
-
-      <div id="fileGrid" class="file-grid"></div>
-
-  </main>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabaseClient.js"></script>
-<script src="js/dashboard.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabaseClient.js"></script> <script src="js/dashboard.js"></script>
 </body>
 </html>
