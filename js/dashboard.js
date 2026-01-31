@@ -70,20 +70,29 @@ async function openFile(name) {
 }
 
 async function deleteFile(name) {
-  const { data: { user } } = await window.supabaseClient.auth.getUser();
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
 
-  const { error } = await window.supabaseClient
-    .storage
-    .from("files")
-    .remove([`${user.id}/${name}`]);
+    if (!user) {
+        alert("User not authenticated");
+        return;
+    }
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+    const filePath = `${user.id}/${name}`;
 
-  loadFiles();
+    const { error } = await window.supabaseClient
+        .storage
+        .from("files")
+        .remove([filePath]);
+
+    if (error) {
+        console.error(error);
+        alert("Delete failed: " + error.message);
+        return;
+    }
+
+    loadFiles();
 }
+
 
 
 function toggleProfileMenu() {
