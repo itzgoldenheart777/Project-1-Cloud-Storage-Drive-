@@ -3,46 +3,46 @@
 <head>
   <title>MyDrive</title>
   <link rel="stylesheet" href="css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="left">
-    <h2>☁ MyDrive</h2>
-  </div>
+  <div class="logo">☁ MyDrive</div>
 
   <input type="text" class="search" placeholder="Search in Drive">
 
-  <div class="profile" onclick="toggleProfileMenu()">
-    <img src="https://i.pravatar.cc/40">
-  </div>
-
-  <div class="profile-menu" id="profileMenu">
-    <p id="userEmail"></p>
-    <button onclick="logout()">Logout</button>
+  <div class="profile-section">
+      <img src="https://i.pravatar.cc/40" onclick="toggleProfileMenu()" class="profile-pic">
+      <div id="profileMenu" class="profile-menu">
+          <p id="userEmail"></p>
+          <button onclick="logout()">Logout</button>
+      </div>
   </div>
 </header>
 
 <div class="layout">
 
   <aside class="sidebar">
-    <button class="new-btn">+ New</button>
-
-    <div class="nav-item active">Home</div>
-    <div class="nav-item">My Drive</div>
-    <div class="nav-item">Shared</div>
-    <div class="nav-item">Starred</div>
-    <div class="nav-item">Trash</div>
+      <button class="new-btn">+ New</button>
+      <div class="nav active">Home</div>
+      <div class="nav">My Drive</div>
+      <div class="nav">Shared with me</div>
+      <div class="nav">Recent</div>
+      <div class="nav">Starred</div>
+      <div class="nav">Trash</div>
   </aside>
 
   <main class="main">
-    <div class="toolbar">
-      <h3>My Files</h3>
-      <button id="uploadBtn">Upload</button>
-      <input type="file" id="fileInput" hidden>
-    </div>
 
-    <div id="fileGrid" class="file-grid"></div>
+      <div class="toolbar">
+          <h2>My Drive</h2>
+          <button id="uploadBtn">Upload</button>
+          <input type="file" id="fileInput" hidden>
+      </div>
+
+      <div id="fileGrid" class="file-grid"></div>
+
   </main>
 
 </div>
@@ -52,5 +52,4 @@
 <script src="js/dashboard.js"></script>
 
 </body>
-
 </html>
