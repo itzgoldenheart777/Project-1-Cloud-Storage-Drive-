@@ -1,122 +1,126 @@
-const fileGrid = document.getElementById("fileGrid");
-const fileInput = document.getElementById("fileInput");
-const viewTitle = document.getElementById("viewTitle");
-// Global State
-let currentFolder = "";
-let currentUser = null;
-let currentTab = "home"; // 'home' or 'mydrive'
+// Ensure functions are global for HTML onclick attributes
+window.currentFolder = "";
+window.currentUser = null;
+window.currentTab = "home";
 
-// Initialize on Load
-window.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("Dashboard Loaded");
 
-async function init() {
-    // 1. Check Auth
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-        window.location.href = "login.html";
+    // 1. Check Auth (Assumes supabaseClient is loaded from previous script tag)
+    if (typeof supabaseClient === 'undefined') {
+        alert("Error: supabaseClient is not defined. Check your API keys.");
         return;
     }
-    currentUser = user;
-    document.getElementById('userEmail').innerText = user.email;
 
-    // 2. Setup Click Outside Listener (for closing context menus)
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (!user) {
+        window.location.href = "login.html"; // Redirect if not logged in
+        return;
+    }
+    
+    window.currentUser = user;
+    const emailEl = document.getElementById('userEmail');
+    if(emailEl) emailEl.innerText = user.email;
+
+    // 2. Initial Load
+    switchTab('home');
+
+    // 3. Global click to close menus
     document.addEventListener('click', (e) => {
-        closeAllMenus();
+        // Close context menu if clicking outside
+        if (!e.target.closest('.context-menu') && !e.target.closest('.more-btn')) {
+            closeAllMenus();
+        }
+        // Close profile menu if clicking outside
         if (!e.target.closest('.profile-container')) {
-            document.getElementById('profileMenu').classList.add('hidden');
+            const pm = document.getElementById('profileMenu');
+            if(pm) pm.classList.add('hidden');
         }
     });
+});
 
-    // 3. Load Initial View
-    switchTab('home');
-}
-
-// --- Navigation Logic ---
-function switchTab(tab) {
-    currentTab = tab;
-    // Update Sidebar UI
+// --- Tab Switching ---
+window.switchTab = function(tab) {
+    window.currentTab = tab;
+    // UI Updates
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    
     if(tab === 'home') {
         document.getElementById('navHome').classList.add('active');
         document.getElementById('pageTitle').innerText = "Home";
         document.getElementById('suggestedSection').style.display = "block";
-        loadRecentFiles(); // Home shows recent stuff
+        loadRecentFiles();
     } else if (tab === 'mydrive') {
         document.getElementById('navMyDrive').classList.add('active');
         document.getElementById('pageTitle').innerText = "My Drive";
         document.getElementById('suggestedSection').style.display = "none";
-        loadMyDrive(""); // Reset to root of My Drive
+        loadMyDrive(""); // Load root
     }
 }
 
-// --- File Loading ---
-
-// Logic for "My Drive" (Folder Structure)
+// --- Data Loading ---
 async function loadMyDrive(folderPath) {
-    currentFolder = folderPath;
-    const breadcrumb = folderPath ? `My Drive > ${folderPath}` : "My Drive";
-    document.getElementById('pageTitle').innerText = breadcrumb;
+    window.currentFolder = folderPath;
+    const displayTitle = folderPath ? `My Drive > ${folderPath}` : "My Drive";
+    document.getElementById('pageTitle').innerText = displayTitle;
 
-    // Fetch from Supabase
+    console.log(`Loading path: ${window.currentUser.id}/${folderPath}`);
+
     const { data, error } = await supabaseClient
         .storage
         .from('files')
-        .list(currentUser.id + "/" + currentFolder);
+        .list(window.currentUser.id + (folderPath ? "/" + folderPath : ""));
 
     if (error) {
-        console.error("Error loading files", error);
+        console.error("Supabase Error:", error);
+        alert("Failed to load files");
         return;
     }
 
     renderFiles(data, 'fileGrid');
 }
 
-// Logic for "Home" (Recent Files - Flattened View)
 async function loadRecentFiles() {
-    // Note: Supabase Storage .list() isn't recursive by default in all clients.
-    // This is a simplified version fetching root. For real recursive "Recent", 
-    // you'd typically query a database table that tracks file uploads.
-    // For this demo, we will just load the root folder as 'Recent'.
-    
+    // Fetches root files as 'Recent' for now
     const { data, error } = await supabaseClient
         .storage
         .from('files')
-        .list(currentUser.id + "/", { sortBy: { column: 'created_at', order: 'desc' } });
+        .list(window.currentUser.id + "/", { sortBy: { column: 'created_at', order: 'desc' } });
 
     if (data) {
-        // Show top 4 in suggested
-        renderFiles(data.slice(0, 4), 'suggestedGrid');
-        // Show rest in files
-        renderFiles(data, 'fileGrid');
+        renderFiles(data.slice(0, 4), 'suggestedGrid'); // Top 4
+        renderFiles(data, 'fileGrid'); // All
     }
 }
 
 // --- Rendering ---
 function renderFiles(files, containerId) {
     const container = document.getElementById(containerId);
+    if(!container) return;
     container.innerHTML = "";
 
     if (!files || files.length === 0) {
-        container.innerHTML = "<p style='color:#666; padding:20px'>No files found.</p>";
+        container.innerHTML = "<p style='color:#888; grid-column: 1/-1;'>No files found.</p>";
         return;
     }
 
     files.forEach(file => {
-        // Skip .emptyFolderPlaceholder if you use that hack
         if(file.name === ".emptyFolderPlaceholder") return;
 
-        const isFolder = !file.metadata; // Supabase folders often lack metadata in list()
-        // Simple icon logic
-        let icon = "description";
-        let color = "#5f6368";
-        if(file.name.endsWith('.jpg') || file.name.endsWith('.png')) { icon = "image"; color = "#d93025"; }
-        else if(file.name.endsWith('.pdf')) { icon = "picture_as_pdf"; color = "#d93025"; }
-        else if(isFolder) { icon = "folder"; color = "#5f6368"; }
+        const isFolder = !file.metadata; 
+        
+        // Icon Selection
+        let icon = "article";
+        let color = "#1a73e8"; // Blue default
+        if(isFolder) { icon = "folder"; color = "#5f6368"; }
+        else if(file.name.match(/\.(jpg|jpeg|png|gif)$/i)) { icon = "image"; color = "#d93025"; }
+        else if(file.name.match(/\.pdf$/i)) { icon = "picture_as_pdf"; color = "#ea4335"; }
 
         const card = document.createElement('div');
         card.className = "file-card";
         
-        // Handle Folder Click vs File Open
+        // Double Click Action
         if (isFolder) {
             card.ondblclick = () => openFolder(file.name);
         } else {
@@ -128,10 +132,8 @@ function renderFiles(files, containerId) {
                 <span class="material-icons-outlined file-icon-large" style="color: ${color}">${icon}</span>
             </div>
             <div class="file-footer">
-                <div class="file-name-row">
-                    <span class="material-icons-outlined file-type-icon" style="color: ${color}">${icon}</span>
-                    <span class="file-name" title="${file.name}">${file.name}</span>
-                </div>
+                <span class="material-icons-outlined" style="margin-right:8px; color:${color}; font-size:20px;">${icon}</span>
+                <span class="file-name">${file.name}</span>
                 <button class="more-btn" onclick="openContextMenu(event, '${file.name}')">
                     <span class="material-icons-outlined">more_vert</span>
                 </button>
@@ -141,132 +143,122 @@ function renderFiles(files, containerId) {
     });
 }
 
-// --- Context Menu Logic ---
-function openContextMenu(event, fileName) {
-    event.stopPropagation(); // Prevent closing immediately
-    closeAllMenus(); // Close others
+// --- Context Menu ---
+window.openContextMenu = function(event, fileName) {
+    event.stopPropagation();
+    closeAllMenus();
 
-    // Create Menu HTML
     const menu = document.createElement('div');
-    menu.className = "context-menu visible";
-    menu.style.top = `${event.clientY}px`;
-    menu.style.left = `${event.clientX}px`; // Position at mouse
+    menu.className = "context-menu";
+    // Position near mouse
+    menu.style.top = `${event.pageY}px`;
+    menu.style.left = `${event.pageX - 150}px`; // Shift left slightly
 
-    // Logic to separate name and extension
+    // Split extension for rename logic
     const parts = fileName.split('.');
     const ext = parts.length > 1 ? '.' + parts.pop() : ''; 
     const nameNoExt = parts.join('.');
 
     menu.innerHTML = `
-        <div class="menu-item" onclick="alert('Preview functionality here')">
-            <span class="material-icons-outlined">visibility</span> Preview
-        </div>
         <div class="menu-item" onclick="triggerRename('${nameNoExt}', '${ext}', '${fileName}')">
             <span class="material-icons-outlined">drive_file_rename_outline</span> Rename
         </div>
         <div class="menu-item" onclick="deleteFile('${fileName}')">
-             <span class="material-icons-outlined">delete</span> Remove
+            <span class="material-icons-outlined">delete</span> Remove
         </div>
         <div class="menu-item">
-             <span class="material-icons-outlined">share</span> Share
+            <span class="material-icons-outlined">share</span> Share
         </div>
     `;
-
     document.body.appendChild(menu);
 }
 
-function closeAllMenus() {
+window.closeAllMenus = function() {
     document.querySelectorAll('.context-menu').forEach(el => el.remove());
 }
 
-// --- File Actions ---
+// --- Actions ---
+window.createFolder = async function() {
+    const folderName = prompt("Enter folder name:");
+    if (!folderName) return;
 
-// 1. Upload
-const fileInput = document.getElementById('fileInput');
-fileInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const path = currentFolder ? `${currentUser.id}/${currentFolder}/${file.name}` : `${currentUser.id}/${file.name}`;
-    
-    const { error } = await supabaseClient.storage.from('files').upload(path, file);
-    if (error) alert("Upload Failed: " + error.message);
-    else {
-        // Refresh view
-        if(currentTab === 'home') loadRecentFiles();
-        else loadMyDrive(currentFolder);
-    }
-};
+    const path = window.currentFolder 
+        ? `${window.currentUser.id}/${window.currentFolder}/${folderName}/.emptyFolderPlaceholder`
+        : `${window.currentUser.id}/${folderName}/.emptyFolderPlaceholder`;
 
-// 2. Folder Navigation
-function openFolder(folderName) {
-    const newPath = currentFolder ? `${currentFolder}/${folderName}` : folderName;
+    const { error } = await supabaseClient.storage.from('files').upload(path, new Blob([""]));
+    if (error) alert("Error creating folder");
+    else refreshView();
+}
+
+window.openFolder = function(folderName) {
+    const newPath = window.currentFolder ? `${window.currentFolder}/${folderName}` : folderName;
     loadMyDrive(newPath);
 }
 
-// 3. Create Folder
-async function createFolder() {
-    const folderName = prompt("New folder name:");
-    if (!folderName) return;
-
-    // Supabase workaround: Upload an empty placeholder file to create the folder path
-    const path = currentFolder 
-        ? `${currentUser.id}/${currentFolder}/${folderName}/.emptyFolderPlaceholder`
-        : `${currentUser.id}/${folderName}/.emptyFolderPlaceholder`;
-
-    const { error } = await supabaseClient.storage.from('files').upload(path, new Blob([""]));
-    if(!error) loadMyDrive(currentFolder);
-}
-
-// 4. Delete
-async function deleteFile(fileName) {
-    if(!confirm(`Delete ${fileName}?`)) return;
-
-    const path = currentFolder ? `${currentUser.id}/${currentFolder}/${fileName}` : `${currentUser.id}/${fileName}`;
-    const { error } = await supabaseClient.storage.from('files').remove([path]);
-    
-    if(error) alert("Error deleting");
-    else {
-        closeAllMenus();
-        if(currentTab === 'home') loadRecentFiles();
-        else loadMyDrive(currentFolder);
-    }
-}
-
-// 5. Rename (Smart Rename)
-async function triggerRename(oldNameNoExt, ext, oldFullName) {
-    const newNameNoExt = prompt("Rename file (extension will be preserved):", oldNameNoExt);
-    if (!newNameNoExt || newNameNoExt === oldNameNoExt) return;
-
-    const newFullName = newNameNoExt + ext;
-    
-    const oldPath = currentFolder ? `${currentUser.id}/${currentFolder}/${oldFullName}` : `${currentUser.id}/${oldFullName}`;
-    const newPath = currentFolder ? `${currentUser.id}/${currentFolder}/${newFullName}` : `${currentUser.id}/${newFullName}`;
-
-    const { error } = await supabaseClient.storage.from('files').move(oldPath, newPath);
-    if(error) alert("Rename failed: " + error.message);
-    else {
-        closeAllMenus();
-        if(currentTab === 'home') loadRecentFiles();
-        else loadMyDrive(currentFolder);
-    }
-}
-
-// 6. Open File
-async function openFile(fileName) {
-    const path = currentFolder ? `${currentUser.id}/${currentFolder}/${fileName}` : `${currentUser.id}/${fileName}`;
-    
+window.openFile = async function(fileName) {
+    const path = window.currentFolder ? `${window.currentUser.id}/${window.currentFolder}/${fileName}` : `${window.currentUser.id}/${fileName}`;
     const { data } = supabaseClient.storage.from('files').getPublicUrl(path);
     if(data) window.open(data.publicUrl, '_blank');
 }
 
-// --- User Actions ---
-function toggleProfileMenu() {
+window.deleteFile = async function(fileName) {
+    if(!confirm(`Are you sure you want to delete ${fileName}?`)) return;
+    
+    const path = window.currentFolder ? `${window.currentUser.id}/${window.currentFolder}/${fileName}` : `${window.currentUser.id}/${fileName}`;
+    
+    const { error } = await supabaseClient.storage.from('files').remove([path]);
+    if(error) alert("Delete failed: " + error.message);
+    else {
+        closeAllMenus();
+        refreshView();
+    }
+}
+
+window.triggerRename = async function(oldNameNoExt, ext, oldFullName) {
+    const newName = prompt("Rename to:", oldNameNoExt);
+    if (!newName || newName === oldNameNoExt) return;
+
+    const newFullName = newName + ext;
+    const basePath = window.currentFolder ? `${window.currentUser.id}/${window.currentFolder}` : `${window.currentUser.id}`;
+    
+    const { error } = await supabaseClient.storage.from('files').move(`${basePath}/${oldFullName}`, `${basePath}/${newFullName}`);
+    
+    if(error) alert("Rename failed: " + error.message);
+    else {
+        closeAllMenus();
+        refreshView();
+    }
+}
+
+// Upload Listener
+const fileInput = document.getElementById('fileInput');
+if(fileInput) {
+    fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const path = window.currentFolder 
+            ? `${window.currentUser.id}/${window.currentFolder}/${file.name}` 
+            : `${window.currentUser.id}/${file.name}`;
+            
+        const { error } = await supabaseClient.storage.from('files').upload(path, file);
+        if(error) alert("Upload failed: " + error.message);
+        else refreshView();
+    };
+}
+
+function refreshView() {
+    if(window.currentTab === 'home') loadRecentFiles();
+    else loadMyDrive(window.currentFolder);
+}
+
+window.toggleProfileMenu = function() {
     const menu = document.getElementById('profileMenu');
     menu.classList.toggle('hidden');
 }
 
-async function logout() {
+window.logout = async function() {
     await supabaseClient.auth.signOut();
     window.location.href = "login.html";
 }
