@@ -13,20 +13,38 @@
   <script src="js/supabaseClient.js"></script>
 
   <script>
-    async function updatePassword() {
-      const password = document.getElementById("newPassword").value;
+document.addEventListener("DOMContentLoaded", async () => {
 
-      const { error } = await window.supabaseClient.auth.updateUser({
-        password: password
-      });
+  // Get session from reset link
+  const { data, error } = await window.supabaseClient.auth.getSession();
 
-      if (error) {
-        alert(error.message);
-      } else {
-        alert("Password updated successfully!");
-        window.location.href = "login.html";
-      }
-    }
-  </script>
+  if (!data.session) {
+    alert("Invalid or expired reset link.");
+    window.location.href = "login.html";
+    return;
+  }
+});
+
+async function updatePassword() {
+  const password = document.getElementById("newPassword").value;
+
+  if (!password) {
+    alert("Enter new password");
+    return;
+  }
+
+  const { error } = await window.supabaseClient.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Password updated successfully!");
+    window.location.href = "login.html";
+  }
+}
+</script>
+
 </body>
 </html>
