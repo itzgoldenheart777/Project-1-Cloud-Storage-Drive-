@@ -11,3 +11,148 @@ button { width: 100%; padding: 10px; margin-top: 10px; cursor: pointer; backgrou
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
 .file { background: white; padding: 20px; border-radius: 8px; cursor: pointer; text-align: center; border: 1px solid #dadce0; }
 @media (max-width: 768px) { .topbar { height: 56px; } .container { padding: 10px; } .grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    background: #f4f6f9;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background: #111827;
+    color: white;
+    padding: 20px;
+    height: 100vh;
+}
+
+.sidebar h2 {
+    margin-bottom: 30px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.sidebar li:hover,
+.sidebar .active {
+    background: #1f2937;
+}
+
+/* Main */
+.main {
+    flex: 1;
+    padding: 20px;
+}
+
+/* Topbar */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar input {
+    width: 300px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* Profile */
+.profile {
+    position: relative;
+    cursor: pointer;
+}
+
+.avatar {
+    border-radius: 50%;
+}
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 8px;
+    width: 180px;
+}
+
+.profile-menu button {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    background: #ef4444;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Upload */
+.upload-section {
+    margin: 20px 0;
+}
+
+/* File Grid */
+.file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.file-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    position: relative;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.file-card h4 {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* 3 Dot Menu */
+.menu-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 30px;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.dropdown button {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    background: white;
+    cursor: pointer;
+    text-align: left;
+}
+
+.dropdown button:hover {
+    background: #f3f4f6;
+}
