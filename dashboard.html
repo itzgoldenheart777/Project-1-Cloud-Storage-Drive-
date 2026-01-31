@@ -6,14 +6,15 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="topbar">
-  <div class="logo">☁ MyDrive</div>
+  <div class="left">
+    <h2>☁ MyDrive</h2>
+  </div>
 
   <input type="text" class="search" placeholder="Search in Drive">
 
   <div class="profile" onclick="toggleProfileMenu()">
-    <img id="profilePic" src="https://i.pravatar.cc/40" />
+    <img src="https://i.pravatar.cc/40">
   </div>
 
   <div class="profile-menu" id="profileMenu">
@@ -22,32 +23,26 @@
   </div>
 </header>
 
-<!-- MAIN LAYOUT -->
 <div class="layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <button class="new-btn">+ New</button>
-    <ul>
-      <li class="active">Home</li>
-      <li>My Drive</li>
-      <li>Shared</li>
-      <li>Starred</li>
-      <li>Trash</li>
-    </ul>
+
+    <div class="nav-item active">Home</div>
+    <div class="nav-item">My Drive</div>
+    <div class="nav-item">Shared</div>
+    <div class="nav-item">Starred</div>
+    <div class="nav-item">Trash</div>
   </aside>
 
-  <!-- CONTENT -->
-  <main class="content">
-
-    <div class="content-header">
-      <h2>My Files</h2>
-      <button id="uploadBtn">Upload File</button>
+  <main class="main">
+    <div class="toolbar">
+      <h3>My Files</h3>
+      <button id="uploadBtn">Upload</button>
       <input type="file" id="fileInput" hidden>
     </div>
 
     <div id="fileGrid" class="file-grid"></div>
-
   </main>
 
 </div>
@@ -57,4 +52,5 @@
 <script src="js/dashboard.js"></script>
 
 </body>
+
 </html>
