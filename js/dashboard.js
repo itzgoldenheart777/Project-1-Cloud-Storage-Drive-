@@ -263,17 +263,16 @@ window.logout = async function() {
     window.location.href = "login.html";
 }
 async function changePassword() {
-  const newPassword = prompt("Enter new password:");
+  const newPass = prompt("Enter new password:");
+  if (!newPass) return;
 
-  if (!newPassword) return;
-
-  const { error } = await window.supabaseClient.auth.updateUser({
-    password: newPassword
+  const { error } = await supabase.auth.updateUser({
+    password: newPass
   });
 
   if (error) {
     alert(error.message);
   } else {
-    alert("Password changed successfully.");
+    alert("Password updated successfully!");
   }
 }
