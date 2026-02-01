@@ -1,7 +1,7 @@
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
   font-family: "Segoe UI", sans-serif;
 }
 
@@ -9,58 +9,36 @@ body {
   background: #f1f3f4;
 }
 
-.layout {
+.app {
   display: flex;
   height: 100vh;
 }
 
-/* SIDEBAR */
+/* Sidebar */
 
 .sidebar {
-  width: 250px;
+  width: 240px;
   background: white;
-  padding: 25px 20px;
-  border-right: 1px solid #e0e0e0;
+  padding: 20px;
+  border-right: 1px solid #ddd;
 }
 
 .logo {
-  font-size: 22px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
-.new-btn {
+.primary-btn {
   width: 100%;
   padding: 10px;
   background: #1a73e8;
   color: white;
   border: none;
   border-radius: 8px;
-  margin-bottom: 25px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.new-btn:hover {
-  background: #1669c1;
-}
-
-.nav-item {
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
   cursor: pointer;
 }
 
-.nav-item:hover {
-  background: #f1f3f4;
-}
-
-.nav-item.active {
-  background: #e8f0fe;
-  color: #1a73e8;
-}
-
-/* MAIN AREA */
+/* Main */
 
 .main {
   flex: 1;
@@ -68,97 +46,102 @@ body {
   flex-direction: column;
 }
 
-/* TOPBAR */
+/* Topbar */
 
 .topbar {
   background: white;
-  padding: 15px 25px;
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #ddd;
 }
 
-.search {
-  width: 350px;
-  padding: 8px 12px;
-  border-radius: 20px;
-  border: 1px solid #ddd;
+.breadcrumbs {
+  font-size: 14px;
 }
 
-.search:focus {
-  outline: none;
-  border-color: #1a73e8;
-}
-
-/* USER */
-
-.avatar {
+#avatar {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   cursor: pointer;
 }
 
-.user-section {
-  position: relative;
-}
-
 .user-menu {
   position: absolute;
-  right: 0;
-  top: 50px;
+  right: 20px;
+  top: 60px;
   background: white;
-  width: 220px;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-}
-
-.user-menu button {
-  width: 100%;
-  padding: 8px;
-  margin-top: 8px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: #f1f3f4;
-}
-
-.user-menu button:hover {
-  background: #e0e0e0;
+  padding: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
 .hidden {
   display: none;
 }
 
-/* CONTENT */
+/* Drop zone */
 
-.content {
-  padding: 25px;
-  overflow-y: auto;
+.drop-zone {
+  padding: 20px;
+  text-align: center;
+  border: 2px dashed #bbb;
+  margin: 15px;
+  border-radius: 10px;
+  background: #fafafa;
 }
 
-/* FILE GRID */
+/* Grid */
 
 .file-grid {
+  padding: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 
 .file-card {
   background: white;
   padding: 15px;
   border-radius: 10px;
-  text-align: center;
+  position: relative;
   cursor: pointer;
-  transition: 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: 0.2s;
 }
 
 .file-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.menu-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+/* Modal */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
 }
