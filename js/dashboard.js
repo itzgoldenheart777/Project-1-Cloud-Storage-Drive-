@@ -167,3 +167,25 @@ async function logout() {
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 }
+
+
+
+async function loadItems(view = "drive") {
+
+  let query = supabaseClient
+    .from("drive_items")
+    .select("*")
+    .eq("user_id", user.id);
+
+  if (view === "drive") {
+    query = query.eq("is_trashed", false)
+                 .eq("parent_id", currentFolder);
+  }
+
+  if (view === "trash") {
+    query = query.eq("is_trashed", true);
+  }
+
+  const { data } = await query;
+  renderItems(data);
+}
