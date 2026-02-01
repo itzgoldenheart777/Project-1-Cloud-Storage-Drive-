@@ -1,8 +1,11 @@
-document.addEventListener("DOMContentLoaded", init);
+const supabaseClient = supabase.createClient(
+  "https://YOUR_PROJECT_ID.supabase.co",
+  "YOUR_PUBLIC_ANON_KEY"
+);
 
 let currentUser = null;
 
-/* ---------------- INIT ---------------- */
+document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   const { data: { user } } = await supabaseClient.auth.getUser();
@@ -13,13 +16,12 @@ async function init() {
   }
 
   currentUser = user;
-
   loadUserInfo();
   loadFiles();
   setupAvatarMenu();
 }
 
-/* ---------------- AVATAR MENU ---------------- */
+/* ---------------- MENU ---------------- */
 
 function setupAvatarMenu() {
   const avatarBtn = document.getElementById("avatarBtn");
@@ -38,64 +40,27 @@ function setupAvatarMenu() {
 
 /* ---------------- USER INFO ---------------- */
 
-async function loadUserInfo() {
+function loadUserInfo() {
   document.getElementById("emailField").value = currentUser.email;
   document.getElementById("displayName").value =
     currentUser.user_metadata?.full_name || "";
-
-  if (currentUser.user_metadata?.avatar_url) {
-    document.getElementById("userAvatar").src =
-      currentUser.user_metadata.avatar_url;
-
-    document.getElementById("avatarPreview").src =
-      currentUser.user_metadata.avatar_url;
-  }
 }
 
 /* ---------------- PROFILE ---------------- */
 
-window.openProfile = function () {
+function openProfile() {
   document.getElementById("profileModal").classList.remove("hidden");
-};
+}
 
-window.closeProfile = function () {
+function closeProfile() {
   document.getElementById("profileModal").classList.add("hidden");
-};
+}
 
-window.viewDetails = function () {
-  alert(
-    `User: ${currentUser.user_metadata?.full_name || "N/A"}\n` +
-    `Email: ${currentUser.email}\n` +
-    `ID: ${currentUser.id}`
-  );
-};
-
-window.saveProfile = async function () {
+async function saveProfile() {
   const full_name = document.getElementById("displayName").value;
-  const avatarFile = document.getElementById("avatarInput").files[0];
-
-  let avatar_url = currentUser.user_metadata?.avatar_url || null;
-
-  if (avatarFile) {
-    const filePath = `avatars/${currentUser.id}`;
-    const { error } = await supabaseClient.storage
-      .from("user-files")
-      .upload(filePath, avatarFile, { upsert: true });
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    const { data } = supabaseClient.storage
-      .from("user-files")
-      .getPublicUrl(filePath);
-
-    avatar_url = data.publicUrl;
-  }
 
   const { error } = await supabaseClient.auth.updateUser({
-    data: { full_name, avatar_url }
+    data: { full_name }
   });
 
   if (error) {
@@ -105,12 +70,11 @@ window.saveProfile = async function () {
 
   alert("Profile updated");
   closeProfile();
-  location.reload();
-};
+}
 
 /* ---------------- PASSWORD RESET ---------------- */
 
-window.resetPassword = async function () {
+async function resetPassword() {
   const { error } =
     await supabaseClient.auth.resetPasswordForEmail(currentUser.email, {
       redirectTo: window.location.origin + "/reset.html"
@@ -118,11 +82,11 @@ window.resetPassword = async function () {
 
   if (error) alert(error.message);
   else alert("Password reset email sent.");
-};
+}
 
 /* ---------------- FILE UPLOAD ---------------- */
 
-window.uploadFile = async function () {
+async function uploadFile() {
   const file = document.getElementById("fileInput").files[0];
   if (!file) {
     alert("Select a file");
@@ -137,7 +101,7 @@ window.uploadFile = async function () {
 
   if (error) alert(error.message);
   else loadFiles();
-};
+}
 
 /* ---------------- FILE LIST ---------------- */
 
@@ -149,7 +113,12 @@ async function loadFiles() {
   const container = document.getElementById("fileList");
   container.innerHTML = "";
 
-  if (!data || data.length === 0) {
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  if (!data.length) {
     container.innerHTML = "<p>No files uploaded</p>";
     return;
   }
@@ -170,27 +139,27 @@ async function loadFiles() {
 
 /* ---------------- DOWNLOAD ---------------- */
 
-window.downloadFile = async function (name) {
+async function downloadFile(name) {
   const { data } = await supabaseClient.storage
     .from("user-files")
     .createSignedUrl(`${currentUser.id}/${name}`, 60);
 
   window.open(data.signedUrl, "_blank");
-};
+}
 
 /* ---------------- DELETE ---------------- */
 
-window.deleteFile = async function (name) {
+async function deleteFile(name) {
   await supabaseClient.storage
     .from("user-files")
     .remove([`${currentUser.id}/${name}`]);
 
   loadFiles();
-};
+}
 
 /* ---------------- LOGOUT ---------------- */
 
-window.logout = async function () {
+async function logout() {
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
-};
+}
