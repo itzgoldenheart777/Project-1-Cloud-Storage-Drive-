@@ -1,10 +1,13 @@
 async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+
+  const email = emailInput.value;
+  const password = passwordInput.value;
 
   const { error } = await window.supabaseClient.auth.signInWithPassword({
-    email,
-    password
+    email: email,
+    password: password
   });
 
   if (error) {
@@ -15,12 +18,15 @@ async function login() {
 }
 
 async function register() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+
+  const email = emailInput.value;
+  const password = passwordInput.value;
 
   const { error } = await window.supabaseClient.auth.signUp({
-    email,
-    password
+    email: email,
+    password: password
   });
 
   if (error) {
@@ -47,6 +53,6 @@ async function forgotPassword() {
   if (error) {
     alert(error.message);
   } else {
-    alert("Password reset link sent to your email.");
+    alert("Password reset link sent.");
   }
 }
