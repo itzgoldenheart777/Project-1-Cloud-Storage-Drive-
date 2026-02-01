@@ -76,3 +76,35 @@ async function loadFiles() {
     container.appendChild(div);
   });
 }
+
+window.uploadFile = async function () {
+  const input = document.getElementById("fileInput");
+
+  if (!input.files.length) {
+    alert("Please select a file");
+    return;
+  }
+
+  const file = input.files[0];
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  const filePath = `${user.id}/${file.name}`;
+
+  const { error } = await supabaseClient.storage
+    .from("user-files")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false
+    });
+
+  if (error) {
+    console.error(error);
+    alert(error.message);
+  } else {
+    alert("Upload successful");
+    loadFiles();
+  }
+};
+
+
