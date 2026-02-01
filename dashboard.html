@@ -6,11 +6,30 @@
 </head>
 <body>
 
-<header>
+<header class="top-bar">
   <h2>MyDrive</h2>
-  <span id="userEmail"></span>
-  <button onclick="logout()">Logout</button>
+
+  <div class="user-section">
+    <img id="profilePic"
+         src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+         class="avatar"
+         onclick="toggleUserMenu()">
+
+    <div id="userMenu" class="user-menu hidden">
+      <p id="userEmail"></p>
+      <p id="userId"></p>
+
+      <input type="file" id="profileUpload" hidden>
+      <button onclick="document.getElementById('profileUpload').click()">
+        Change Profile Picture
+      </button>
+
+      <button onclick="changePassword()">Change Password</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
 </header>
+
 
 <input type="file" id="fileInput" multiple>
 <button onclick="createFolder()">New Folder</button>
