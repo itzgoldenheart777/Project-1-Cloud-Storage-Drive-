@@ -1,131 +1,169 @@
-async function init() {
-  const { data } = await window.supabaseClient.auth.getSession();
+let currentFolder = null;
+let renameTarget = null;
 
+document.addEventListener("DOMContentLoaded", init);
+
+async function init() {
+  const { data } = await supabaseClient.auth.getSession();
   if (!data.session) {
     window.location.href = "login.html";
     return;
   }
 
-  const user = data.session.user;
-
   document.getElementById("userEmail").innerText =
-    "Email: " + user.email;
+    data.session.user.email;
 
-  document.getElementById("userId").innerText =
-    "User ID: " + user.id;
-
-  loadProfilePicture(user.id);
+  loadItems();
+  setupDragDrop();
 }
 
+async function loadItems() {
+  const { data } = await supabaseClient
+    .from("drive_items")
+    .select("*")
+    .eq("parent_id", currentFolder);
 
+  renderItems(data);
+  renderBreadcrumb();
+}
 
-async function loadFiles() {
-  const { data } =
-    await window.supabaseClient.storage.from("drive").list();
-
+function renderItems(items) {
   const grid = document.getElementById("fileGrid");
   grid.innerHTML = "";
 
-  data.forEach(file => {
-    const div = document.createElement("div");
-    div.className = "file-card";
-    div.innerHTML = `
-      <p>${file.name}</p>
-      <button onclick="deleteFile('${file.name}')">Delete</button>
+  items.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "file-card";
+    card.innerHTML = `
+      <div>${item.type === "folder" ? "📁" : "📄"}</div>
+      <p>${item.name}</p>
+      <span class="menu-btn" onclick="openMenu('${item.id}')">⋮</span>
     `;
-    grid.appendChild(div);
+
+    card.onclick = () => {
+      if (item.type === "folder") {
+        currentFolder = item.id;
+        loadItems();
+      } else {
+        previewFile(item);
+      }
+    };
+
+    grid.appendChild(card);
   });
 }
 
+/* Rename */
 
+function openRename(id, name) {
+  renameTarget = id;
+  document.getElementById("renameInput").value = name;
+  document.getElementById("renameModal").classList.remove("hidden");
+}
 
-async function deleteFile(name) {
-  await window.supabaseClient.storage.from("drive").remove([name]);
-  loadFiles();
+async function confirmRename() {
+  const newName = document.getElementById("renameInput").value;
+  await supabaseClient
+    .from("drive_items")
+    .update({ name: newName })
+    .eq("id", renameTarget);
+
+  closeModal();
+  loadItems();
+}
+
+/* Folder */
+
+async function createFolder() {
+  const name = prompt("Folder name:");
+  if (!name) return;
+
+  const { data: user } =
+    await supabaseClient.auth.getUser();
+
+  await supabaseClient.from("drive_items").insert({
+    user_id: user.user.id,
+    name,
+    type: "folder",
+    parent_id: currentFolder
+  });
+
+  loadItems();
+}
+
+/* Drag Drop */
+
+function setupDragDrop() {
+  const dropZone = document.getElementById("dropZone");
+  dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+  });
+
+  dropZone.addEventListener("drop", async e => {
+    e.preventDefault();
+    const files = [...e.dataTransfer.files];
+    uploadFiles(files);
+  });
+}
+
+async function uploadFiles(files) {
+  const { data: user } =
+    await supabaseClient.auth.getUser();
+
+  for (let file of files) {
+    const path = `${user.user.id}/${Date.now()}_${file.name}`;
+
+    await supabaseClient.storage
+      .from("drive")
+      .upload(path, file);
+
+    await supabaseClient.from("drive_items").insert({
+      user_id: user.user.id,
+      name: file.name,
+      type: "file",
+      path,
+      parent_id: currentFolder
+    });
+  }
+
+  loadItems();
+}
+
+/* Preview */
+
+function previewFile(item) {
+  const { data } =
+    supabaseClient.storage
+      .from("drive")
+      .getPublicUrl(item.path);
+
+  document.getElementById("previewContent").innerHTML =
+    `<iframe src="${data.publicUrl}" width="100%" height="400px"></iframe>`;
+
+  document.getElementById("previewModal")
+    .classList.remove("hidden");
+}
+
+function closeModal() {
+  document.querySelectorAll(".modal")
+    .forEach(m => m.classList.add("hidden"));
+}
+
+/* Breadcrumb */
+
+function renderBreadcrumb() {
+  document.getElementById("breadcrumbs").innerText =
+    currentFolder ? "My Drive > Folder" : "My Drive";
+}
+
+/* User */
+
+function toggleUserMenu() {
+  document.getElementById("userMenu")
+    .classList.toggle("hidden");
 }
 
 async function logout() {
-  await window.supabaseClient.auth.signOut();
+  await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 }
-
-async function changePassword() {
-  const newPass = prompt("Enter new password:");
-  if (!newPass) return;
-
-  const { error } =
-    await window.supabaseClient.auth.updateUser({
-      password: newPass
-    });
-
-  if (error) alert(error.message);
-  else alert("Password updated.");
-}
-
-
-document.getElementById("fileInput").addEventListener("change", async e => {
-  const files = [...e.target.files];
-
-  for (const file of files) {
-    await window.supabaseClient.storage
-      .from("drive")
-      .upload(file.name, file);
-  }
-
-  loadFiles();
-});
-
-init();
-
-
-
-document.getElementById("profileUpload")
-  .addEventListener("change", async (e) => {
-
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const { data } = await window.supabaseClient.auth.getSession();
-  const userId = data.session.user.id;
-
-  const filePath = `profiles/${userId}.png`;
-
-  await window.supabaseClient.storage
-    .from("drive")
-    .upload(filePath, file, { upsert: true });
-
-  loadProfilePicture(userId);
-});
-
-
-
-async function loadProfilePicture(userId) {
-  const { data } =
-    window.supabaseClient.storage
-      .from("drive")
-      .getPublicUrl(`profiles/${userId}.png`);
-
-  if (data.publicUrl) {
-    document.getElementById("profilePic").src =
-      data.publicUrl + "?t=" + new Date().getTime();
-  }
-}
-
-
-function renderFiles(files) {
-  const grid = document.getElementById("fileGrid");
-  grid.innerHTML = "";
-
-  files.forEach(file => {
-    const div = document.createElement("div");
-    div.className = "file-card";
-    div.innerHTML = `
-      <div style="font-size:40px;">📄</div>
-      <p style="margin-top:10px;">${file.name}</p>
-    `;
-    grid.appendChild(div);
-  });
-}
-
-
-
