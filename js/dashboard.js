@@ -1,5 +1,8 @@
+let user;
 let currentFolder = null;
-let renameTarget = null;
+let selectedItems = new Set();
+let currentView = "drive";
+let contextTarget = null;
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -10,12 +13,17 @@ async function init() {
     return;
   }
 
-  document.getElementById("userEmail").innerText =
-    data.session.user.email;
+  user = data.session.user;
 
-  loadItems();
+  document.getElementById("userEmail").innerText = user.email;
+  document.getElementById("userId").innerText = user.id;
+
+  await loadItems();
   setupDragDrop();
+  setupSearch();
+  setupRightClick();
 }
+
 
 async function loadItems() {
   const { data } = await supabaseClient
