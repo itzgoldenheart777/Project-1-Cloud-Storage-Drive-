@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Signup - MyDrive</title>
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+<div class="auth-container">
+
+  <h2>Create Account</h2>
+
+  <div class="form-item">
+    <label>Email</label>
+    <div class="input-wrapper">
+      <input type="email" id="email" required />
+    </div>
+  </div>
+
+  <div class="form-item">
+    <label>Password</label>
+    <div class="input-wrapper">
+      <input type="password" id="password" required />
+      <button type="button" id="eyeball">
+        <div class="eye"></div>
+      </button>
+      <div id="beam"></div>
+    </div>
+  </div>
+
+  <button onclick="signup()">Sign Up</button>
+
+  <p class="links">
+    <a href="index.html">Already have account?</a>
+  </p>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>
+
