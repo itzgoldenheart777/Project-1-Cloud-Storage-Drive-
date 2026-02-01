@@ -6,52 +6,57 @@
 </head>
 <body>
 
-<div class="topbar">
-  <h2>My Drive</h2>
-  <button onclick="logout()">Logout</button>
-</div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <h2>My Drive</h2>
 
-  <div class="user-area">
-  <button id="avatarBtn" aria-haspopup="true" aria-expanded="false">
-    <img id="userAvatar" src="default-avatar.png" alt="User Avatar" />
-  </button>
+    <div class="user-area">
+      <button id="avatarBtn" aria-haspopup="true">
+        <img id="userAvatar"
+             src="https://ui-avatars.com/api/?name=User"
+             alt="User Avatar">
+      </button>
 
-  <div id="userMenu" class="dropdown hidden" role="menu">
-    <button onclick="viewDetails()">View Details</button>
-    <button onclick="openProfile()">Edit Profile</button>
-    <button onclick="resetPassword()">Reset Password</button>
-    <button onclick="logout()">Logout</button>
+      <div id="userMenu" class="dropdown hidden">
+        <button onclick="viewDetails()">View Details</button>
+        <button onclick="openProfile()">Edit Profile</button>
+        <button onclick="resetPassword()">Reset Password</button>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
   </div>
-</div>
-<div id="profileModal" class="modal hidden">
-  <div class="modal-content">
-    <h2>Edit Profile</h2>
 
-    <img id="avatarPreview" width="100" />
+  <!-- PROFILE MODAL -->
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Edit Profile</h2>
 
-    <input type="file" id="avatarInput" accept="image/*" />
+      <img id="avatarPreview" width="100" />
 
-    <input type="text" id="displayName" placeholder="Full Name" />
+      <input type="file" id="avatarInput" accept="image/*">
+      <input type="text" id="displayName" placeholder="Full Name">
+      <input type="email" id="emailField" disabled>
 
-    <input type="email" id="emailField" disabled />
-
-    <button onclick="saveProfile()">Save</button>
-    <button onclick="closeProfile()">Cancel</button>
+      <div class="modal-buttons">
+        <button onclick="saveProfile()">Save</button>
+        <button onclick="closeProfile()">Cancel</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<div class="upload-section">
-  <input type="file" id="fileInput">
-  <button onclick="uploadFile()">Upload</button>
-</div>
+  <!-- UPLOAD SECTION -->
+  <div class="upload-section">
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload</button>
+  </div>
 
-<div id="fileList" class="file-grid"></div>
+  <!-- FILE LIST -->
+  <div id="fileList" class="file-grid"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabaseClient.js"></script>
-
-<script src="js/dashboard.js"></script>
-
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
 
 </body>
 </html>
