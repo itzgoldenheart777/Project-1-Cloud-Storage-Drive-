@@ -115,27 +115,26 @@ function setupDragDrop() {
 }
 
 async function uploadFiles(files) {
-  const { data: user } =
-    await supabaseClient.auth.getUser();
-
   for (let file of files) {
-    const path = `${user.user.id}/${Date.now()}_${file.name}`;
+
+    const path = `${user.id}/${Date.now()}_${file.name}`;
 
     await supabaseClient.storage
       .from("drive")
       .upload(path, file);
 
     await supabaseClient.from("drive_items").insert({
-      user_id: user.user.id,
+      user_id: user.id,
       name: file.name,
       type: "file",
-      path,
+      storage_path: path,
       parent_id: currentFolder
     });
   }
 
   loadItems();
 }
+
 
 /* Preview */
 
@@ -197,3 +196,140 @@ async function loadItems(view = "drive") {
   const { data } = await query;
   renderItems(data);
 }
+
+function openFolder(id) {
+  currentFolder = id;
+  loadItems();
+}
+
+async function deleteItem(id) {
+  await supabaseClient
+    .from("drive_items")
+    .update({ is_trashed: true })
+    .eq("id", id);
+
+  loadItems();
+}
+
+async function moveItem(id, newParent) {
+  await supabaseClient
+    .from("drive_items")
+    .update({ parent_id: newParent })
+    .eq("id", id);
+
+  loadItems();
+}
+
+function setupRightClick() {
+
+  document.addEventListener("contextmenu", function(e) {
+
+    const card = e.target.closest(".file-card");
+    if (!card) return;
+
+    e.preventDefault();
+    contextTarget = card.dataset.id;
+
+    showContextMenu(e.pageX, e.pageY);
+  });
+}
+function setupSearch() {
+  const search = document.getElementById("search");
+
+  search.addEventListener("input", async function() {
+
+    const { data } = await supabaseClient
+      .from("drive_items")
+      .select("*")
+      .ilike("name", `%${this.value}%`)
+      .eq("user_id", user.id);
+
+    renderItems(data);
+  });
+}
+async function changeAvatar() {
+
+  document.getElementById("avatarUpload").click();
+
+  document.getElementById("avatarUpload")
+    .onchange = async function(e) {
+
+    const file = e.target.files[0];
+    const path = `avatars/${user.id}`;
+
+    await supabaseClient.storage
+      .from("drive")
+      .upload(path, file, { upsert: true });
+
+    const { data } =
+      supabaseClient.storage.from("drive").getPublicUrl(path);
+
+    document.getElementById("avatar").src =
+      data.publicUrl;
+  };
+}
+
+function toggleSelect(id) {
+
+  if (selectedItems.has(id))
+    selectedItems.delete(id);
+  else
+    selectedItems.add(id);
+
+  renderSelection();
+}
+function renderItems(items) {
+
+  const grid = document.getElementById("fileGrid");
+  grid.innerHTML = "";
+
+  items.forEach(item => {
+
+    const div = document.createElement("div");
+    div.className = "file-card";
+    div.dataset.id = item.id;
+
+    div.innerHTML = `
+      <div>${item.type === "folder" ? "📁" : "📄"}</div>
+      <p>${item.name}</p>
+      <span class="menu">⋮</span>
+    `;
+
+    div.onclick = (e) => {
+
+      if (e.ctrlKey) {
+        toggleSelect(item.id);
+        return;
+      }
+
+      if (item.type === "folder")
+        openFolder(item.id);
+      else
+        preview(item.storage_path);
+    };
+
+    grid.appendChild(div);
+  });
+}
+function preview(path) {
+
+  const { data } =
+    supabaseClient.storage
+      .from("drive")
+      .getPublicUrl(path);
+
+  document.getElementById("previewContent")
+    .innerHTML =
+      `<iframe src="${data.publicUrl}" width="100%" height="500px"></iframe>`;
+
+  document.getElementById("previewModal")
+    .classList.remove("hidden");
+}
+
+
+
+
+
+
+
+
