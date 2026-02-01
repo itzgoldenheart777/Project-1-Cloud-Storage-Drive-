@@ -1,37 +1,58 @@
-let isLogin = true;
+async function login() {
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
 
-function toggleMode() {
-  isLogin = !isLogin;
-  document.getElementById("formTitle").innerText = isLogin ? "Login" : "Register";
-}
+  const email = emailInput.value;
+  const password = passwordInput.value;
 
-async function handleAuth() {
-  const email = email.value;
-  const password = password.value;
+  const { error } = await window.supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
 
-  if (isLogin) {
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) return alert(error.message);
-    window.location.href = "dashboard.html";
+  if (error) {
+    alert(error.message);
   } else {
-    const { error } = await supabaseClient.auth.signUp({ email, password });
-    if (error) return alert(error.message);
-    alert("Check your email to confirm.");
+    window.location.href = "dashboard.html";
   }
 }
 
-async function resetPassword() {
-  const emailVal = document.getElementById("email").value;
-  await supabaseClient.auth.resetPasswordForEmail(emailVal, {
-    redirectTo: window.location.origin + "/reset.html"
+async function register() {
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+
+  const email = emailInput.value;
+  const password = passwordInput.value;
+
+  const { error } = await window.supabaseClient.auth.signUp({
+    email: email,
+    password: password
   });
-  alert("Reset link sent.");
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Registration successful. Please login.");
+  }
 }
 
-async function updatePassword() {
-  const newPassword = document.getElementById("newPassword").value;
-  const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-  if (error) return alert(error.message);
-  alert("Password updated.");
-  window.location.href = "login.html";
+async function forgotPassword() {
+  const email = document.getElementById("email").value;
+
+  if (!email) {
+    alert("Enter your email first.");
+    return;
+  }
+
+  const { error } =
+    await window.supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo:
+        "https://itzgoldenheart777.github.io/Project-1-Cloud-Storage-Drive/reset.html"
+    });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Password reset link sent.");
+  }
 }
