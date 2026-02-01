@@ -92,3 +92,34 @@ header {
 #dropZone.dragging {
   background: #e8f0fe;
 }
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.user-menu {
+  position: absolute;
+  right: 20px;
+  top: 70px;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.hidden {
+  display: none;
+}
+
+
