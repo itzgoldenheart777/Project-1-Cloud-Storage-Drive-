@@ -4,41 +4,65 @@
   <title>MyDrive - Dashboard</title>
   <link rel="stylesheet" href="css/dashboard.css">
 </head>
+
+  
 <body>
 
-<header class="top-bar">
-  <h2>MyDrive</h2>
+<div class="layout">
 
-  <div class="user-section">
-    <img id="profilePic"
-         src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-         class="avatar"
-         onclick="toggleUserMenu()">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2 class="logo">MyDrive</h2>
 
-    <div id="userMenu" class="user-menu hidden">
-      <p id="userEmail"></p>
-      <p id="userId"></p>
+    <button class="new-btn" onclick="document.getElementById('fileInput').click()">
+      + New
+    </button>
 
-      <input type="file" id="profileUpload" hidden>
-      <button onclick="document.getElementById('profileUpload').click()">
-        Change Profile Picture
-      </button>
+    <nav>
+      <div class="nav-item active">My Drive</div>
+      <div class="nav-item">Recent</div>
+      <div class="nav-item">Starred</div>
+      <div class="nav-item">Trash</div>
+    </nav>
+  </aside>
 
-      <button onclick="changePassword()">Change Password</button>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
-</header>
+  <!-- Main Content -->
+  <main class="main">
 
+    <!-- Top Bar -->
+    <header class="topbar">
+      <input type="text" class="search" placeholder="Search in Drive">
 
-<input type="file" id="fileInput" multiple>
-<button onclick="createFolder()">New Folder</button>
+      <div class="user-section">
+        <img id="profilePic"
+             src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+             class="avatar"
+             onclick="toggleUserMenu()">
 
-<div id="fileGrid"></div>
+        <div id="userMenu" class="user-menu hidden">
+          <p id="userEmail"></p>
+          <p id="userId"></p>
+          <button onclick="changePassword()">Change Password</button>
+          <button onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- File Area -->
+    <section class="content">
+      <input type="file" id="fileInput" multiple hidden>
+      <div id="fileGrid" class="file-grid"></div>
+    </section>
+
+  </main>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
 <script src="js/dashboard.js"></script>
 
 </body>
+
+  
 </html>
