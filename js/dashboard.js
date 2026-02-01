@@ -140,3 +140,129 @@ window.logout = async function () {
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 };
+
+/* ============================= */
+/*     Load User Info            */
+/* ============================= */
+
+async function loadUserInfo() {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) return;
+
+  currentUser = user;
+
+  document.getElementById("emailField").value = user.email;
+  document.getElementById("displayName").value =
+    user.user_metadata?.full_name || "";
+
+  if (user.user_metadata?.avatar_url) {
+    document.getElementById("userAvatar").src =
+      user.user_metadata.avatar_url;
+    document.getElementById("avatarPreview").src =
+      user.user_metadata.avatar_url;
+  }
+}
+
+/* ============================= */
+/*       Toggle Dropdown         */
+/* ============================= */
+
+document.getElementById("avatarBtn").addEventListener("click", () => {
+  const menu = document.getElementById("userMenu");
+  menu.classList.toggle("hidden");
+});
+
+//Close when clicking outside:
+document.addEventListener("click", function (e) {
+  if (!document.querySelector(".user-area").contains(e.target)) {
+    document.getElementById("userMenu").classList.add("hidden");
+  }
+});
+
+/* ============================= */
+/*      View Details             */
+/* ============================= */
+
+window.viewDetails = function () {
+  alert(
+    `User: ${currentUser.user_metadata?.full_name || "N/A"}\nEmail: ${currentUser.email}\nID: ${currentUser.id}`
+  );
+};
+
+/* ============================= */
+/*     Open Profile            */
+/* ============================= */
+
+window.openProfile = function () {
+  document.getElementById("profileModal").classList.remove("hidden");
+};
+
+window.closeProfile = function () {
+  document.getElementById("profileModal").classList.add("hidden");
+};
+
+/* ============================= */
+/*  Avatar Preview Before Save   */
+/* ============================= */
+
+document.getElementById("avatarInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById("avatarPreview").src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ============================= */
+/* Save Profile (Update Supabase)  */
+/* ============================= */
+
+window.saveProfile = async function () {
+  const full_name = document.getElementById("displayName").value;
+
+  const { error } = await supabaseClient.auth.updateUser({
+    data: { full_name }
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Profile updated");
+  closeProfile();
+  loadUserInfo();
+};
+
+/* ============================= */
+/*        Reset Password         */
+/* ============================= */
+
+window.resetPassword = async function () {
+  const email = currentUser.email;
+
+  const { error } =
+    await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/reset.html"
+    });
+
+  if (error) alert(error.message);
+  else alert("Password reset email sent.");
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
