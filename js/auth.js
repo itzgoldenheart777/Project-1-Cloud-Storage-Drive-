@@ -1,58 +1,39 @@
+async function signup() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const { error } = await supabaseClient.auth.signUp({
+    email,
+    password
+  });
+
+  if (error) return alert(error.message);
+
+  alert("Check email for verification!");
+}
+
 async function login() {
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  const email = emailInput.value;
-  const password = passwordInput.value;
-
-  const { error } = await window.supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
   });
 
-  if (error) {
-    alert(error.message);
-  } else {
-    window.location.href = "dashboard.html";
-  }
+  if (error) return alert(error.message);
+
+  window.location.href = "dashboard.html";
 }
 
-async function register() {
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-
-  const email = emailInput.value;
-  const password = passwordInput.value;
-
-  const { error } = await window.supabaseClient.auth.signUp({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Registration successful. Please login.");
-  }
-}
-
-async function forgotPassword() {
+async function resetPassword() {
   const email = document.getElementById("email").value;
 
-  if (!email) {
-    alert("Enter your email first.");
-    return;
-  }
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
+  });
 
-  const { error } =
-    await window.supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo:
-        "https://itzgoldenheart777.github.io/Project-1-Cloud-Storage-Drive/reset.html"
-    });
+  if (error) return alert(error.message);
 
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Password reset link sent.");
-  }
+  alert("Reset link sent!");
 }
