@@ -6,11 +6,18 @@ async function init() {
     return;
   }
 
-  document.getElementById("userEmail").innerText =
-    data.session.user.email;
+  const user = data.session.user;
 
-  loadFiles();
+  document.getElementById("userEmail").innerText =
+    "Email: " + user.email;
+
+  document.getElementById("userId").innerText =
+    "User ID: " + user.id;
+
+  loadProfilePicture(user.id);
 }
+
+
 
 async function loadFiles() {
   const { data } =
@@ -40,6 +47,20 @@ async function logout() {
   window.location.href = "login.html";
 }
 
+async function changePassword() {
+  const newPass = prompt("Enter new password:");
+  if (!newPass) return;
+
+  const { error } =
+    await window.supabaseClient.auth.updateUser({
+      password: newPass
+    });
+
+  if (error) alert(error.message);
+  else alert("Password updated.");
+}
+
+
 document.getElementById("fileInput").addEventListener("change", async e => {
   const files = [...e.target.files];
 
@@ -53,3 +74,42 @@ document.getElementById("fileInput").addEventListener("change", async e => {
 });
 
 init();
+
+
+
+document.getElementById("profileUpload")
+  .addEventListener("change", async (e) => {
+
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const { data } = await window.supabaseClient.auth.getSession();
+  const userId = data.session.user.id;
+
+  const filePath = `profiles/${userId}.png`;
+
+  await window.supabaseClient.storage
+    .from("drive")
+    .upload(filePath, file, { upsert: true });
+
+  loadProfilePicture(userId);
+});
+
+
+
+async function loadProfilePicture(userId) {
+  const { data } =
+    window.supabaseClient.storage
+      .from("drive")
+      .getPublicUrl(`profiles/${userId}.png`);
+
+  if (data.publicUrl) {
+    document.getElementById("profilePic").src =
+      data.publicUrl + "?t=" + new Date().getTime();
+  }
+}
+
+
+
+
+
