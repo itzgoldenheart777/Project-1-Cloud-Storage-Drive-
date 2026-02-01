@@ -26,14 +26,29 @@ async function init() {
 
 
 async function loadItems() {
-  const { data } = await supabaseClient
+
+  let query = supabaseClient
     .from("drive_items")
     .select("*")
-    .eq("parent_id", currentFolder);
+    .eq("user_id", user.id)
+    .eq("is_trashed", false);
 
-  renderItems(data);
-  renderBreadcrumb();
+  if (currentFolder === null) {
+    query = query.is("parent_id", null);
+  } else {
+    query = query.eq("parent_id", currentFolder);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  renderItems(data || []);
 }
+
 
 function renderItems(items) {
   const grid = document.getElementById("fileGrid");
