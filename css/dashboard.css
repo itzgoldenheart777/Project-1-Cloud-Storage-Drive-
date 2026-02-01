@@ -140,8 +140,8 @@ body {
 
 /* Responsive */
 
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
+@media(max-width:768px){
+  .sidebar{display:none}
+  .file-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
 }
+
