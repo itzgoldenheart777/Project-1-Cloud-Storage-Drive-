@@ -23,6 +23,22 @@
     <button onclick="logout()">Logout</button>
   </div>
 </div>
+<div id="profileModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Edit Profile</h2>
+
+    <img id="avatarPreview" width="100" />
+
+    <input type="file" id="avatarInput" accept="image/*" />
+
+    <input type="text" id="displayName" placeholder="Full Name" />
+
+    <input type="email" id="emailField" disabled />
+
+    <button onclick="saveProfile()">Save</button>
+    <button onclick="closeProfile()">Cancel</button>
+  </div>
+</div>
 
 <div class="upload-section">
   <input type="file" id="fileInput">
