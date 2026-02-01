@@ -1,78 +1,156 @@
-document.addEventListener("DOMContentLoaded", checkUser);
+document.addEventListener("DOMContentLoaded", init);
 
-async function checkUser() {
-  const { data, error } = await supabaseClient.auth.getUser();
+let currentUser = null;
 
-  if (error || !data.user) {
+/* ---------------- INIT ---------------- */
+
+async function init() {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) {
     window.location.href = "login.html";
     return;
   }
 
+  currentUser = user;
+
+  loadUserInfo();
   loadFiles();
+  setupAvatarMenu();
 }
 
-/* ============================= */
-/*          UPLOAD FILE          */
-/* ============================= */
+/* ---------------- AVATAR MENU ---------------- */
 
-window.uploadFile = async function () {
-  const input = document.getElementById("fileInput");
+function setupAvatarMenu() {
+  const avatarBtn = document.getElementById("avatarBtn");
+  const menu = document.getElementById("userMenu");
 
-  if (!input.files.length) {
-    alert("Please select a file");
-    return;
+  avatarBtn.addEventListener("click", () => {
+    menu.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!avatarBtn.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.add("hidden");
+    }
+  });
+}
+
+/* ---------------- USER INFO ---------------- */
+
+async function loadUserInfo() {
+  document.getElementById("emailField").value = currentUser.email;
+  document.getElementById("displayName").value =
+    currentUser.user_metadata?.full_name || "";
+
+  if (currentUser.user_metadata?.avatar_url) {
+    document.getElementById("userAvatar").src =
+      currentUser.user_metadata.avatar_url;
+
+    document.getElementById("avatarPreview").src =
+      currentUser.user_metadata.avatar_url;
   }
+}
 
-  const file = input.files[0];
+/* ---------------- PROFILE ---------------- */
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) {
-    alert("User not authenticated");
-    return;
-  }
-
-  const filePath = `${user.id}/${file.name}`;
-
-  const { error } = await supabaseClient.storage
-    .from("files")   // ✅ correct bucket name
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false
-    });
-
-  if (error) {
-    console.error("Upload error:", error);
-    alert(error.message);
-    return;
-  }
-
-  alert("Upload successful");
-  loadFiles();
+window.openProfile = function () {
+  document.getElementById("profileModal").classList.remove("hidden");
 };
 
-/* ============================= */
-/*          LOAD FILES           */
-/* ============================= */
+window.closeProfile = function () {
+  document.getElementById("profileModal").classList.add("hidden");
+};
 
-async function loadFiles() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return;
+window.viewDetails = function () {
+  alert(
+    `User: ${currentUser.user_metadata?.full_name || "N/A"}\n` +
+    `Email: ${currentUser.email}\n` +
+    `ID: ${currentUser.id}`
+  );
+};
 
-  const { data, error } = await supabaseClient.storage
-    .from("files")   // ✅ correct bucket
-    .list(user.id);
+window.saveProfile = async function () {
+  const full_name = document.getElementById("displayName").value;
+  const avatarFile = document.getElementById("avatarInput").files[0];
+
+  let avatar_url = currentUser.user_metadata?.avatar_url || null;
+
+  if (avatarFile) {
+    const filePath = `avatars/${currentUser.id}`;
+    const { error } = await supabaseClient.storage
+      .from("user-files")
+      .upload(filePath, avatarFile, { upsert: true });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    const { data } = supabaseClient.storage
+      .from("user-files")
+      .getPublicUrl(filePath);
+
+    avatar_url = data.publicUrl;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({
+    data: { full_name, avatar_url }
+  });
 
   if (error) {
-    console.error("List error:", error);
     alert(error.message);
     return;
   }
+
+  alert("Profile updated");
+  closeProfile();
+  location.reload();
+};
+
+/* ---------------- PASSWORD RESET ---------------- */
+
+window.resetPassword = async function () {
+  const { error } =
+    await supabaseClient.auth.resetPasswordForEmail(currentUser.email, {
+      redirectTo: window.location.origin + "/reset.html"
+    });
+
+  if (error) alert(error.message);
+  else alert("Password reset email sent.");
+};
+
+/* ---------------- FILE UPLOAD ---------------- */
+
+window.uploadFile = async function () {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) {
+    alert("Select a file");
+    return;
+  }
+
+  const filePath = `${currentUser.id}/${file.name}`;
+
+  const { error } = await supabaseClient.storage
+    .from("user-files")
+    .upload(filePath, file);
+
+  if (error) alert(error.message);
+  else loadFiles();
+};
+
+/* ---------------- FILE LIST ---------------- */
+
+async function loadFiles() {
+  const { data, error } = await supabaseClient.storage
+    .from("user-files")
+    .list(currentUser.id);
 
   const container = document.getElementById("fileList");
   container.innerHTML = "";
 
-  if (!data.length) {
-    container.innerHTML = "<p>No files uploaded yet.</p>";
+  if (!data || data.length === 0) {
+    container.innerHTML = "<p>No files uploaded</p>";
     return;
   }
 
@@ -90,179 +168,29 @@ async function loadFiles() {
   });
 }
 
-/* ============================= */
-/*         DOWNLOAD FILE         */
-/* ============================= */
+/* ---------------- DOWNLOAD ---------------- */
 
 window.downloadFile = async function (name) {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return;
-
-  const { data, error } = await supabaseClient.storage
-    .from("files")   // ✅ correct bucket
-    .createSignedUrl(`${user.id}/${name}`, 60);
-
-  if (error) {
-    console.error("Download error:", error);
-    alert(error.message);
-    return;
-  }
+  const { data } = await supabaseClient.storage
+    .from("user-files")
+    .createSignedUrl(`${currentUser.id}/${name}`, 60);
 
   window.open(data.signedUrl, "_blank");
 };
 
-/* ============================= */
-/*          DELETE FILE          */
-/* ============================= */
+/* ---------------- DELETE ---------------- */
 
 window.deleteFile = async function (name) {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return;
-
-  const { error } = await supabaseClient.storage
-    .from("files")   // ✅ correct bucket
-    .remove([`${user.id}/${name}`]);
-
-  if (error) {
-    console.error("Delete error:", error);
-    alert(error.message);
-    return;
-  }
+  await supabaseClient.storage
+    .from("user-files")
+    .remove([`${currentUser.id}/${name}`]);
 
   loadFiles();
 };
 
-/* ============================= */
-/*            LOGOUT             */
-/* ============================= */
+/* ---------------- LOGOUT ---------------- */
 
 window.logout = async function () {
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 };
-
-/* ============================= */
-/*     Load User Info            */
-/* ============================= */
-
-async function loadUserInfo() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) return;
-
-  currentUser = user;
-
-  document.getElementById("emailField").value = user.email;
-  document.getElementById("displayName").value =
-    user.user_metadata?.full_name || "";
-
-  if (user.user_metadata?.avatar_url) {
-    document.getElementById("userAvatar").src =
-      user.user_metadata.avatar_url;
-    document.getElementById("avatarPreview").src =
-      user.user_metadata.avatar_url;
-  }
-}
-
-/* ============================= */
-/*       Toggle Dropdown         */
-/* ============================= */
-
-document.getElementById("avatarBtn").addEventListener("click", () => {
-  const menu = document.getElementById("userMenu");
-  menu.classList.toggle("hidden");
-});
-
-//Close when clicking outside:
-document.addEventListener("click", function (e) {
-  if (!document.querySelector(".user-area").contains(e.target)) {
-    document.getElementById("userMenu").classList.add("hidden");
-  }
-});
-
-/* ============================= */
-/*      View Details             */
-/* ============================= */
-
-window.viewDetails = function () {
-  alert(
-    `User: ${currentUser.user_metadata?.full_name || "N/A"}\nEmail: ${currentUser.email}\nID: ${currentUser.id}`
-  );
-};
-
-/* ============================= */
-/*     Open Profile            */
-/* ============================= */
-
-window.openProfile = function () {
-  document.getElementById("profileModal").classList.remove("hidden");
-};
-
-window.closeProfile = function () {
-  document.getElementById("profileModal").classList.add("hidden");
-};
-
-/* ============================= */
-/*  Avatar Preview Before Save   */
-/* ============================= */
-
-document.getElementById("avatarInput").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    document.getElementById("avatarPreview").src = reader.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-/* ============================= */
-/* Save Profile (Update Supabase)  */
-/* ============================= */
-
-window.saveProfile = async function () {
-  const full_name = document.getElementById("displayName").value;
-
-  const { error } = await supabaseClient.auth.updateUser({
-    data: { full_name }
-  });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  alert("Profile updated");
-  closeProfile();
-  loadUserInfo();
-};
-
-/* ============================= */
-/*        Reset Password         */
-/* ============================= */
-
-window.resetPassword = async function () {
-  const email = currentUser.email;
-
-  const { error } =
-    await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/reset.html"
-    });
-
-  if (error) alert(error.message);
-  else alert("Password reset email sent.");
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
