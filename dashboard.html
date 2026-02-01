@@ -31,8 +31,12 @@
              src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
              onclick="toggleUserMenu()">
         <div id="userMenu" class="user-menu hidden">
-          <p id="userEmail"></p>
-          <button onclick="logout()">Logout</button>
+            <p id="userEmail"></p>
+            <p id="userId"></p>
+            <input type="file" id="avatarUpload" hidden>
+            <button onclick="changeAvatar()">Change Profile Image</button>
+            <button onclick="logout()">Logout</button>
+
         </div>
       </div>
     </header>
