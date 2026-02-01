@@ -1,43 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login - MyDrive</title>
+  <title>Drive Login</title>
   <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
-<div class="auth-card">
-  <h2>Login</h2>
+<div class="container">
+  <h2>Cloud Drive</h2>
 
-  <div class="form-item">
-    <label>Email</label>
-    <div class="input-wrapper">
-      <input type="email" id="email">
-    </div>
-  </div>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
 
-  <div class="form-item">
-    <label>Password</label>
-    <div class="input-wrapper">
-      <input type="password" id="password">
-      <button type="button" id="eyeball">
-        <div class="eye"></div>
-      </button>
-      <div id="beam"></div>
-    </div>
-  </div>
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Signup</button>
 
-  <button id="loginBtn">Sign In</button>
-
-  <div class="auth-links">
-    <p><a href="signup.html">Create Account</a></p>
-    <p><a href="reset.html">Forgot Password?</a></p>
-  </div>
+  <p id="message"></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabaseClient.js"></script>
 <script src="js/login.js"></script>
-
 </body>
 </html>
