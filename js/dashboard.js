@@ -37,6 +37,8 @@ async function loadFiles() {
   });
 }
 
+
+
 async function deleteFile(name) {
   await window.supabaseClient.storage.from("drive").remove([name]);
   loadFiles();
@@ -110,6 +112,20 @@ async function loadProfilePicture(userId) {
 }
 
 
+function renderFiles(files) {
+  const grid = document.getElementById("fileGrid");
+  grid.innerHTML = "";
+
+  files.forEach(file => {
+    const div = document.createElement("div");
+    div.className = "file-card";
+    div.innerHTML = `
+      <div style="font-size:40px;">📄</div>
+      <p style="margin-top:10px;">${file.name}</p>
+    `;
+    grid.appendChild(div);
+  });
+}
 
 
 
