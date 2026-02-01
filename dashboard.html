@@ -11,6 +11,19 @@
   <button onclick="logout()">Logout</button>
 </div>
 
+  <div class="user-area">
+  <button id="avatarBtn" aria-haspopup="true" aria-expanded="false">
+    <img id="userAvatar" src="default-avatar.png" alt="User Avatar" />
+  </button>
+
+  <div id="userMenu" class="dropdown hidden" role="menu">
+    <button onclick="viewDetails()">View Details</button>
+    <button onclick="openProfile()">Edit Profile</button>
+    <button onclick="resetPassword()">Reset Password</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+
 <div class="upload-section">
   <input type="file" id="fileInput">
   <button onclick="uploadFile()">Upload</button>
