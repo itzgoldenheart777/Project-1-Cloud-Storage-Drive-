@@ -326,20 +326,22 @@ function renderItems(items) {
     grid.appendChild(div);
   });
 }
-function preview(path) {
 
-  const { data } =
-    supabaseClient.storage
-      .from("drive")
-      .getPublicUrl(path);
 
-  document.getElementById("previewContent")
-    .innerHTML =
-      `<iframe src="${data.publicUrl}" width="100%" height="500px"></iframe>`;
+async function preview(path) {
+
+  const { data } = await supabaseClient
+    .storage
+    .from("drive")
+    .createSignedUrl(path, 60);
+
+  document.getElementById("previewContent").innerHTML =
+    `<iframe src="${data.signedUrl}" width="100%" height="500"></iframe>`;
 
   document.getElementById("previewModal")
     .classList.remove("hidden");
 }
+
 
 
 
