@@ -10,26 +10,7 @@ body {
   padding: 15px;
   display: flex;
   justify-content: space-between;
-}
-
-.upload-section {
-  padding: 20px;
-}
-
-.file-grid {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 20px;
-}
-
-.file-card {
-  background: white;
-  width: 150px;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  align-items: center;
 }
 
 .user-area {
@@ -37,8 +18,8 @@ body {
 }
 
 #avatarBtn {
-  border: none;
   background: none;
+  border: none;
   cursor: pointer;
 }
 
@@ -77,4 +58,31 @@ body {
   background: white;
   padding: 20px;
   width: 300px;
+  text-align: center;
+}
+
+.modal-buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.upload-section {
+  padding: 20px;
+}
+
+.file-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+.file-card {
+  background: white;
+  width: 160px;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
