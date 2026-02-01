@@ -1,39 +1,65 @@
-async function signup() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+document.addEventListener("DOMContentLoaded", () => {
 
-  const { error } = await supabaseClient.auth.signUp({
-    email,
-    password
-  });
+  // SIGN UP
+  const signupBtn = document.getElementById("signupBtn");
+  if (signupBtn) {
+    signupBtn.addEventListener("click", async () => {
 
-  if (error) return alert(error.message);
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-  alert("Check email for verification!");
-}
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
 
-async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+      if (error) {
+        alert(error.message);
+      } else {
+        alert("Account created! Check your email.");
+        window.location.href = "login.html";
+      }
+    });
+  }
 
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
+  // LOGIN
+  const loginBtn = document.getElementById("loginBtn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", async () => {
 
-  if (error) return alert(error.message);
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-  window.location.href = "dashboard.html";
-}
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-async function resetPassword() {
-  const email = document.getElementById("email").value;
+      if (error) {
+        alert(error.message);
+      } else {
+        window.location.href = "dashboard.html";
+      }
+    });
+  }
 
-  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin
-  });
+  // RESET PASSWORD
+  const resetBtn = document.getElementById("resetBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", async () => {
 
-  if (error) return alert(error.message);
+      const email = document.getElementById("resetEmail").value;
 
-  alert("Reset link sent!");
-}
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/login.html"
+      });
+
+      if (error) {
+        alert(error.message);
+      } else {
+        alert("Reset email sent!");
+      }
+    });
+  }
+
+});
