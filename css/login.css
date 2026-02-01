@@ -1,74 +1,36 @@
-:root {
-  --bgColor: #0f172a;
-  --cardColor: #1e293b;
-  --inputColor: #ffffff;
-  --outlineColor: dodgerblue;
-  --beamColor: #38bdf8;
-  --spacer: 1.2rem;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-  font-family: monospace;
-}
-
 body {
-  display: grid;
-  place-items: center;
-  background: var(--bgColor);
+  background: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: Arial;
 }
 
-/* Card */
-.auth-card {
-  background: var(--cardColor);
-  padding: 2.5rem;
-  width: 350px;
-  border-radius: 12px;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.4);
-}
-
-.auth-card h2 {
-  text-align: center;
-  color: white;
-  margin-bottom: 2rem;
-}
-
-/* Form */
-.form-item > * + * {
-  margin-top: 0.5rem;
-}
-
-label {
-  color: #94a3b8;
-  font-size: 0.9rem;
+.container {
+  background: white;
+  padding: 30px;
+  width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 input {
-  padding: 0.75rem 4rem 0.75rem 0.75rem;
   width: 100%;
-  border: none;
-  background: transparent;
-  color: white;
-  box-shadow: inset 0 0 0 2px #334155,
-              inset 6px 6px 0 rgba(30,144,255,0.15),
-              3px 3px 0 rgba(30,144,255,0.15);
-  font-size: 1rem;
-}
-
-input:focus {
-  outline: 2px solid var(--outlineColor);
+  margin: 10px 0;
+  padding: 10px;
 }
 
 button {
   width: 100%;
-  padding: 0.8rem;
-  margin-top: 1.5rem;
-  background: #2563eb;
+  padding: 10px;
+  margin-top: 10px;
+  background: dodgerblue;
   color: white;
   border: none;
-  cursor
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
