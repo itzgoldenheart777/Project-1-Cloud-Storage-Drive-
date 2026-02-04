@@ -1,62 +1,175 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>My Drive</title>
-  <link rel="stylesheet" href="css/dashboard.css">
-</head>
-<body>
-
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <h2>My Drive</h2>
-
-    <div class="user-area">
-      <button id="avatarBtn" aria-haspopup="true">
-        <img id="userAvatar"
-             src="https://ui-avatars.com/api/?name=User"
-             alt="User Avatar">
-      </button>
-
-      <div id="userMenu" class="dropdown hidden">
-        <button onclick="viewDetails()">View Details</button>
-        <button onclick="openProfile()">Edit Profile</button>
-        <button onclick="resetPassword()">Reset Password</button>
-        <button onclick="logout()">Logout</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROFILE MODAL -->
-  <div id="profileModal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Edit Profile</h2>
-
-      <img id="avatarPreview" width="100" />
-
-      <input type="file" id="avatarInput" accept="image/*">
-      <input type="text" id="displayName" placeholder="Full Name">
-      <input type="email" id="emailField" disabled>
-
-      <div class="modal-buttons">
-        <button onclick="saveProfile()">Save</button>
-        <button onclick="closeProfile()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- UPLOAD SECTION -->
-  <div class="upload-section">
-    <input type="file" id="fileInput">
-    <button onclick="uploadFile()">Upload</button>
-  </div>
-
-  <!-- FILE LIST -->
-  <div id="fileList" class="file-grid"></div>
-
-  <!-- SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabaseClient.js"></script>
-  <script src="js/dashboard.js"></script>
-
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/dashboard.html b/dashboard.html
+index 197be3563cd8a3510356651b77ca9f7d988256bc..865013d382fe9140f62e1102de7b4d02aecac3ed 100644
+--- a/dashboard.html
++++ b/dashboard.html
+@@ -1,62 +1,137 @@
+ <!DOCTYPE html>
+-<html>
++<html lang="en">
+ <head>
++  <meta charset="UTF-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>My Drive</title>
+   <link rel="stylesheet" href="css/dashboard.css">
+ </head>
+-<body>
+-
+-  <!-- TOP BAR -->
++<body class="dashboard">
+   <div class="topbar">
+-    <h2>My Drive</h2>
++    <div class="brand">
++      <span class="logo">Drive</span>
++      <span class="app-name">Cloud Storage</span>
++    </div>
++
++    <div class="search">
++      <input id="searchInput" type="search" placeholder="Search in Drive" aria-label="Search in Drive">
++    </div>
++
++    <div class="top-actions">
++      <button class="btn ghost" id="refreshBtn">Refresh</button>
++      <button class="btn primary" id="uploadBtn">Upload</button>
++      <input type="file" id="fileInput" multiple hidden>
+ 
+-    <div class="user-area">
+-      <button id="avatarBtn" aria-haspopup="true">
+-        <img id="userAvatar"
+-             src="https://ui-avatars.com/api/?name=User"
+-             alt="User Avatar">
+-      </button>
++      <div class="user-area">
++        <button id="avatarBtn" aria-haspopup="true" aria-expanded="false">
++          <img id="userAvatar"
++               src="https://ui-avatars.com/api/?name=User"
++               alt="User Avatar">
++        </button>
+ 
+-      <div id="userMenu" class="dropdown hidden">
+-        <button onclick="viewDetails()">View Details</button>
+-        <button onclick="openProfile()">Edit Profile</button>
+-        <button onclick="resetPassword()">Reset Password</button>
+-        <button onclick="logout()">Logout</button>
++        <div id="userMenu" class="dropdown hidden" role="menu">
++          <button onclick="viewDetails()">View Details</button>
++          <button onclick="openProfile()">Edit Profile</button>
++          <button onclick="resetPassword()">Reset Password</button>
++          <button onclick="logout()">Logout</button>
++        </div>
+       </div>
+     </div>
+   </div>
+ 
+-  <!-- PROFILE MODAL -->
++  <div class="layout">
++    <aside class="sidebar">
++      <button class="btn primary full" id="newUploadBtn">New Upload</button>
++      <nav class="nav">
++        <button class="nav-item active">My Drive</button>
++        <button class="nav-item">Shared with me</button>
++        <button class="nav-item">Starred</button>
++        <button class="nav-item">Trash</button>
++      </nav>
++      <div class="storage">
++        <p>Storage</p>
++        <div class="storage-bar">
++          <span id="storageFill"></span>
++        </div>
++        <small id="storageText">0 MB of 2 GB used</small>
++      </div>
++    </aside>
++
++    <main class="content">
++      <div class="content-header">
++        <div>
++          <p class="breadcrumb">My Drive</p>
++          <h1>Files</h1>
++        </div>
++        <div class="view-toggle" role="group" aria-label="View toggle">
++          <button class="btn ghost active" data-view="grid">Grid</button>
++          <button class="btn ghost" data-view="list">List</button>
++        </div>
++      </div>
++
++      <div class="toolbar">
++        <div class="toolbar-left">
++          <label>
++            Sort by
++            <select id="sortSelect">
++              <option value="name-asc">Name (A-Z)</option>
++              <option value="name-desc">Name (Z-A)</option>
++              <option value="time-desc">Newest</option>
++              <option value="time-asc">Oldest</option>
++            </select>
++          </label>
++        </div>
++        <div class="toolbar-right" id="statusText">Ready</div>
++      </div>
++
++      <section id="dropZone" class="drop-zone">
++        <p>Drag and drop files here to upload</p>
++      </section>
++
++      <div id="fileList" class="file-grid"></div>
++    </main>
++  </div>
++
+   <div id="profileModal" class="modal hidden">
+     <div class="modal-content">
+       <h2>Edit Profile</h2>
+ 
+-      <img id="avatarPreview" width="100" />
++      <img id="avatarPreview" width="96" height="96" alt="Avatar preview" />
+ 
+       <input type="file" id="avatarInput" accept="image/*">
+       <input type="text" id="displayName" placeholder="Full Name">
+       <input type="email" id="emailField" disabled>
+ 
+       <div class="modal-buttons">
+-        <button onclick="saveProfile()">Save</button>
+-        <button onclick="closeProfile()">Cancel</button>
++        <button class="btn primary" onclick="saveProfile()">Save</button>
++        <button class="btn ghost" onclick="closeProfile()">Cancel</button>
+       </div>
+     </div>
+   </div>
+ 
+-  <!-- UPLOAD SECTION -->
+-  <div class="upload-section">
+-    <input type="file" id="fileInput">
+-    <button onclick="uploadFile()">Upload</button>
++  <div id="detailsModal" class="modal hidden">
++    <div class="modal-content">
++      <h2>Account Details</h2>
++      <div class="detail-item">
++        <span>Email</span>
++        <strong id="detailEmail">-</strong>
++      </div>
++      <div class="detail-item">
++        <span>Name</span>
++        <strong id="detailName">-</strong>
++      </div>
++      <div class="detail-item">
++        <span>Last sign in</span>
++        <strong id="detailSignIn">-</strong>
++      </div>
++      <div class="modal-buttons">
++        <button class="btn primary" onclick="closeDetails()">Close</button>
++      </div>
++    </div>
+   </div>
+ 
+-  <!-- FILE LIST -->
+-  <div id="fileList" class="file-grid"></div>
+-
+-  <!-- SUPABASE -->
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <script src="js/supabaseClient.js"></script>
+   <script src="js/dashboard.js"></script>
+-
+ </body>
+ </html>
+ 
+EOF
+)
