@@ -1,9 +1,9 @@
  (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/js/dashboard.js b/js/dashboard.js
-index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997df631d38 100644
+index 6513b3508a215d8c9eceea33d13c633900189f67..75c2456b6d68cdafd13fc9359064134a5b83b65e 100644
 --- a/js/dashboard.js
 +++ b/js/dashboard.js
-@@ -1,472 +1,407 @@
+@@ -1,472 +1,513 @@
 - (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 -diff --git a/js/dashboard.js b/js/dashboard.js
 -index ddd064eef51ad75401693b79188f823352bae240..5d392df60e079c69fac472860eebd101276510a3 100644
@@ -480,26 +480,48 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +
 +let currentUser = null;
 +let files = [];
++let previewUrls = new Map();
 +let viewMode = "grid";
 +let sortMode = "name-asc";
 +let searchTerm = "";
++let demoMode = false;
++
++const DEMO_FILES = [
++  { id: "d1", name: "Project plan.pdf", size: 249000, created_at: new Date().toISOString(), type: "application/pdf", path: "demo/path1" },
++  { id: "d2", name: "Vacation.jpg", size: 1802000, created_at: new Date(Date.now() - 86400000).toISOString(), type: "image/jpeg", path: "demo/path2" },
++  { id: "d3", name: "Budget.xlsx", size: 122000, created_at: new Date(Date.now() - 6 * 86400000).toISOString(), type: "application/vnd.ms-excel", path: "demo/path3" }
++];
 +
 +document.addEventListener("DOMContentLoaded", init);
 +
 +async function init() {
++  setupAvatarMenu();
++  setupToolbar();
++  setupUploads();
++  setupMobileSidebar();
++
 +  const { data: { user } } = await supabaseClient.auth.getUser();
 +
 +  if (!user) {
-+    window.location.href = "login.html";
++    demoMode = true;
++    currentUser = { email: "demo@drive.local", user_metadata: { full_name: "Demo User" } };
++    files = [...DEMO_FILES];
++    loadUserInfo();
++    updateStorageUsage();
++    renderFiles();
++    updateStatus("Demo mode: sign in to sync cloud files");
 +    return;
 +  }
 +
 +  currentUser = user;
 +  loadUserInfo();
-+  setupAvatarMenu();
-+  setupToolbar();
-+  setupUploads();
 +  await loadFiles();
++}
++
++function setupMobileSidebar() {
++  const menuToggle = document.getElementById("menuToggle");
++  const sidebar = document.getElementById("sidebar");
++  menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
 +}
 +
 +function setupAvatarMenu() {
@@ -508,10 +530,7 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +
 +  avatarBtn.addEventListener("click", () => {
 +    menu.classList.toggle("hidden");
-+    avatarBtn.setAttribute(
-+      "aria-expanded",
-+      menu.classList.contains("hidden") ? "false" : "true"
-+    );
++    avatarBtn.setAttribute("aria-expanded", menu.classList.contains("hidden") ? "false" : "true");
 +  });
 +
 +  document.addEventListener("click", (event) => {
@@ -523,32 +542,34 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +}
 +
 +function setupToolbar() {
-+  const searchInput = document.getElementById("searchInput");
-+  const sortSelect = document.getElementById("sortSelect");
-+  const viewButtons = document.querySelectorAll(".view-toggle button");
-+  const refreshBtn = document.getElementById("refreshBtn");
-+
-+  searchInput.addEventListener("input", (event) => {
++  document.getElementById("searchInput").addEventListener("input", (event) => {
 +    searchTerm = event.target.value.trim().toLowerCase();
 +    renderFiles();
 +  });
 +
-+  sortSelect.addEventListener("change", (event) => {
++  document.getElementById("sortSelect").addEventListener("change", (event) => {
 +    sortMode = event.target.value;
 +    renderFiles();
 +  });
 +
-+  viewButtons.forEach((btn) => {
++  document.querySelectorAll(".view-toggle button").forEach((btn) => {
 +    btn.addEventListener("click", () => {
-+      viewButtons.forEach((button) => button.classList.remove("active"));
++      document.querySelectorAll(".view-toggle button").forEach((item) => item.classList.remove("active"));
 +      btn.classList.add("active");
 +      viewMode = btn.dataset.view;
 +      renderFiles();
 +    });
 +  });
 +
-+  refreshBtn.addEventListener("click", async () => {
++  document.getElementById("refreshBtn").addEventListener("click", async () => {
 +    updateStatus("Refreshing...");
++    if (demoMode) {
++      files = [...DEMO_FILES];
++      renderFiles();
++      updateStatus("Demo mode refreshed");
++      return;
++    }
++
 +    await loadFiles();
 +    updateStatus("Ready");
 +  });
@@ -560,10 +581,10 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +  const fileInput = document.getElementById("fileInput");
 +  const dropZone = document.getElementById("dropZone");
 +
-+  const openFilePicker = () => fileInput.click();
++  const pickFile = () => fileInput.click();
 +
-+  uploadBtn.addEventListener("click", openFilePicker);
-+  newUploadBtn.addEventListener("click", openFilePicker);
++  uploadBtn.addEventListener("click", pickFile);
++  newUploadBtn.addEventListener("click", pickFile);
 +
 +  fileInput.addEventListener("change", async () => {
 +    if (fileInput.files.length) {
@@ -579,7 +600,7 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +    });
 +  });
 +
-+  ["dragleave", "drop"].forEach((eventName) => {
++  ["drop", "dragleave"].forEach((eventName) => {
 +    dropZone.addEventListener(eventName, (event) => {
 +      event.preventDefault();
 +      dropZone.classList.remove("active");
@@ -595,35 +616,24 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +}
 +
 +function loadUserInfo() {
-+  const avatar = currentUser.user_metadata?.avatar_url;
-+  const fullName = currentUser.user_metadata?.full_name || "";
++  const fullName = currentUser.user_metadata?.full_name || "User";
++  const avatarUrl = currentUser.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}`;
 +
-+  document.getElementById("emailField").value = currentUser.email;
++  document.getElementById("emailField").value = currentUser.email || "-";
 +  document.getElementById("displayName").value = fullName;
-+  document.getElementById("detailEmail").textContent = currentUser.email;
-+  document.getElementById("detailName").textContent = fullName || "Not set";
-+  document.getElementById("detailSignIn").textContent = new Date(
-+    currentUser.last_sign_in_at || Date.now()
-+  ).toLocaleString();
-+
-+  const avatarUrl = avatar
-+    ? avatar
-+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || "User")}`;
-+
++  document.getElementById("detailEmail").textContent = currentUser.email || "-";
++  document.getElementById("detailName").textContent = fullName;
++  document.getElementById("detailSignIn").textContent = new Date(currentUser.last_sign_in_at || Date.now()).toLocaleString();
 +  document.getElementById("userAvatar").src = avatarUrl;
 +  document.getElementById("avatarPreview").src = avatarUrl;
-+  document.getElementById("avatarInput").addEventListener("change", previewAvatar);
-+}
 +
-+function previewAvatar(event) {
-+  const file = event.target.files[0];
-+  if (!file) return;
-+
-+  const reader = new FileReader();
-+  reader.onload = () => {
-+    document.getElementById("avatarPreview").src = reader.result;
-+  };
-+  reader.readAsDataURL(file);
++  document.getElementById("avatarInput").addEventListener("change", (event) => {
++    const file = event.target.files[0];
++    if (!file) return;
++    const reader = new FileReader();
++    reader.onload = () => { document.getElementById("avatarPreview").src = reader.result; };
++    reader.readAsDataURL(file);
++  });
 +}
 +
 +function openProfile() {
@@ -638,17 +648,22 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +  const fullName = document.getElementById("displayName").value.trim();
 +  const avatarUrl = document.getElementById("avatarPreview").src;
 +
-+  const { error } = await supabaseClient.auth.updateUser({
-+    data: { full_name: fullName, avatar_url: avatarUrl }
-+  });
++  if (demoMode) {
++    document.getElementById("userAvatar").src = avatarUrl;
++    document.getElementById("detailName").textContent = fullName || "User";
++    alert("Profile updated in demo mode.");
++    closeProfile();
++    return;
++  }
 +
++  const { error } = await supabaseClient.auth.updateUser({ data: { full_name: fullName, avatar_url: avatarUrl } });
 +  if (error) {
 +    alert(error.message);
 +    return;
 +  }
 +
 +  document.getElementById("userAvatar").src = avatarUrl;
-+  document.getElementById("detailName").textContent = fullName || "Not set";
++  document.getElementById("detailName").textContent = fullName || "User";
 +  alert("Profile updated");
 +  closeProfile();
 +}
@@ -662,8 +677,13 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +}
 +
 +async function resetPassword() {
++  if (demoMode) {
++    alert("Demo mode: sign in first to reset password.");
++    return;
++  }
++
 +  const { error } = await supabaseClient.auth.resetPasswordForEmail(currentUser.email, {
-+    redirectTo: window.location.origin + "/reset.html"
++    redirectTo: `${window.location.origin}/reset.html`
 +  });
 +
 +  if (error) {
@@ -676,9 +696,10 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +
 +async function loadFiles() {
 +  updateStatus("Loading files...");
++
 +  const { data, error } = await supabaseClient
 +    .from("files")
-+    .select("*")
++    .select("id, name, path, type, size, created_at")
 +    .eq("user_id", currentUser.id)
 +    .order("created_at", { ascending: false });
 +
@@ -689,9 +710,24 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +  }
 +
 +  files = data || [];
++  previewUrls = new Map();
++  await hydratePreviewUrls(files);
 +  updateStorageUsage();
 +  renderFiles();
 +  updateStatus("Ready");
++}
++
++async function hydratePreviewUrls(list) {
++  const imageFiles = list.filter((file) => (file.type || "").startsWith("image/"));
++
++  await Promise.all(
++    imageFiles.map(async (file) => {
++      const { data, error } = await supabaseClient.storage.from("drive").createSignedUrl(file.path, 60 * 20);
++      if (!error && data?.signedUrl) {
++        previewUrls.set(file.id, data.signedUrl);
++      }
++    })
++  );
 +}
 +
 +function renderFiles() {
@@ -699,38 +735,53 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +  container.className = viewMode === "list" ? "file-grid list" : "file-grid";
 +  container.innerHTML = "";
 +
-+  const filtered = files.filter((file) =>
-+    (file.name || "").toLowerCase().includes(searchTerm)
-+  );
-+  const sorted = sortFiles(filtered);
++  const visible = sortFiles(files.filter((file) => (file.name || "").toLowerCase().includes(searchTerm)));
 +
-+  if (!sorted.length) {
-+    container.innerHTML = "<p>No files found</p>";
++  if (!visible.length) {
++    container.innerHTML = "<p>No files found.</p>";
 +    return;
 +  }
 +
-+  sorted.forEach((file) => {
-+    const card = document.createElement("div");
-+    card.className = viewMode === "list" ? "file-card list" : "file-card";
++  visible.forEach((file) => {
++    const card = document.createElement("article");
++    card.className = "file-card";
 +
-+    const meta = document.createElement("div");
-+    meta.className = "file-meta";
-+    meta.innerHTML = `
-+      <span class="file-name">${file.name}</span>
-+      <span class="file-details">${formatSize(file.size)} • ${formatDate(file.created_at)}</span>
++    const thumb = document.createElement("div");
++    thumb.className = "file-thumb";
++    const previewUrl = previewUrls.get(file.id);
++    if (previewUrl) {
++      thumb.innerHTML = `<img src="${previewUrl}" alt="${file.name}">`;
++    } else {
++      thumb.innerHTML = `<span class="ext">${getExtension(file.name)}</span>`;
++    }
++
++    const body = document.createElement("div");
++    body.className = "file-body";
++    body.innerHTML = `
++      <div class="file-name">${file.name}</div>
++      <div class="file-details">${formatSize(file.size)} • ${formatDate(file.created_at)}</div>
 +    `;
 +
 +    const actions = document.createElement("div");
 +    actions.className = "file-actions";
-+    actions.appendChild(createActionButton("Download", () => downloadFile(file)));
-+    actions.appendChild(createActionButton("Share", () => copyFileLink(file)));
-+    actions.appendChild(createActionButton("Rename", () => renameFile(file)));
-+    actions.appendChild(createActionButton("Delete", () => deleteFile(file)));
++    actions.appendChild(actionButton("Download", () => downloadFile(file)));
++    actions.appendChild(actionButton("Share", () => copyFileLink(file)));
++    actions.appendChild(actionButton("Rename", () => renameFile(file)));
++    actions.appendChild(actionButton("Delete", () => deleteFile(file), "danger"));
++    body.appendChild(actions);
 +
-+    card.appendChild(meta);
-+    card.appendChild(actions);
++    card.appendChild(thumb);
++    card.appendChild(body);
 +    container.appendChild(card);
 +  });
++}
++
++function actionButton(label, onClick, className = "") {
++  const button = document.createElement("button");
++  button.textContent = label;
++  if (className) button.classList.add(className);
++  button.addEventListener("click", onClick);
++  return button;
 +}
 +
 +function sortFiles(list) {
@@ -743,6 +794,10 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +        return new Date(a.created_at) - new Date(b.created_at);
 +      case "time-desc":
 +        return new Date(b.created_at) - new Date(a.created_at);
++      case "size-desc":
++        return (b.size || 0) - (a.size || 0);
++      case "size-asc":
++        return (a.size || 0) - (b.size || 0);
 +      default:
 +        return (a.name || "").localeCompare(b.name || "");
 +    }
@@ -750,31 +805,45 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +  return sorted;
 +}
 +
-+function createActionButton(label, handler) {
-+  const button = document.createElement("button");
-+  button.textContent = label;
-+  button.addEventListener("click", handler);
-+  return button;
-+}
-+
 +async function uploadFiles(fileList) {
-+  updateStatus("Uploading files...");
++  if (demoMode) {
++    const demoUploaded = fileList.map((file, index) => ({
++      id: `demo-${Date.now()}-${index}`,
++      name: file.name,
++      size: file.size,
++      type: file.type,
++      path: `demo/${file.name}`,
++      created_at: new Date().toISOString()
++    }));
++    files = [...demoUploaded, ...files];
++    renderFiles();
++    updateStorageUsage();
++    updateStatus("Uploaded in demo mode");
++    return;
++  }
++
++  updateStatus("Uploading...");
++
 +  for (const file of fileList) {
 +    const path = `${currentUser.id}/${Date.now()}_${file.name}`;
-+    const { error } = await supabaseClient.storage.from("drive").upload(path, file);
++    const { error: uploadError } = await supabaseClient.storage.from("drive").upload(path, file);
 +
-+    if (error) {
-+      alert(error.message);
++    if (uploadError) {
++      alert(uploadError.message);
 +      continue;
 +    }
 +
-+    await supabaseClient.from("files").insert({
++    const { error: insertError } = await supabaseClient.from("files").insert({
 +      user_id: currentUser.id,
 +      name: file.name,
 +      path,
 +      type: file.type,
 +      size: file.size
 +    });
++
++    if (insertError) {
++      alert(insertError.message);
++    }
 +  }
 +
 +  await loadFiles();
@@ -782,10 +851,12 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +}
 +
 +async function downloadFile(file) {
-+  const { data, error } = await supabaseClient.storage
-+    .from("drive")
-+    .createSignedUrl(file.path, 60);
++  if (demoMode) {
++    alert("Demo mode: cloud download is disabled.");
++    return;
++  }
 +
++  const { data, error } = await supabaseClient.storage.from("drive").createSignedUrl(file.path, 60);
 +  if (error) {
 +    alert(error.message);
 +    return;
@@ -795,91 +866,126 @@ index 6513b3508a215d8c9eceea33d13c633900189f67..1a07025a2d6e56502679813e51990997
 +}
 +
 +async function copyFileLink(file) {
-+  const { data, error } = await supabaseClient.storage
-+    .from("drive")
-+    .createSignedUrl(file.path, 60 * 60);
++  if (demoMode) {
++    await navigator.clipboard.writeText(`demo://file/${encodeURIComponent(file.name)}`);
++    updateStatus("Demo link copied");
++    return;
++  }
 +
++  const { data, error } = await supabaseClient.storage.from("drive").createSignedUrl(file.path, 60 * 60);
 +  if (error) {
 +    alert(error.message);
 +    return;
 +  }
 +
 +  await navigator.clipboard.writeText(data.signedUrl);
-+  updateStatus("Link copied to clipboard");
++  updateStatus("Share link copied");
 +}
 +
 +async function renameFile(file) {
-+  const newName = prompt("Enter a new filename", file.name);
++  const newName = prompt("Enter new file name", file.name);
 +  if (!newName || newName === file.name) return;
 +
-+  const newPath = `${currentUser.id}/${Date.now()}_${newName}`;
-+  const { error } = await supabaseClient.storage
-+    .from("drive")
-+    .move(file.path, newPath);
-+
-+  if (error) {
-+    alert(error.message);
++  if (demoMode) {
++    files = files.map((item) => (item.id === file.id ? { ...item, name: newName } : item));
++    renderFiles();
++    updateStatus("Renamed in demo mode");
 +    return;
 +  }
 +
-+  await supabaseClient
++  const extension = getExtension(file.path || file.name).toLowerCase();
++  const keepExtension = newName.toLowerCase().endsWith(`.${extension.toLowerCase()}`) || !extension;
++  const finalName = keepExtension ? newName : `${newName}.${extension}`;
++  const newPath = `${currentUser.id}/${Date.now()}_${finalName}`;
++
++  const { error: moveError } = await supabaseClient.storage.from("drive").move(file.path, newPath);
++  if (moveError) {
++    alert(moveError.message);
++    return;
++  }
++
++  const { error: updateError } = await supabaseClient
 +    .from("files")
-+    .update({ name: newName, path: newPath })
++    .update({ name: finalName, path: newPath })
 +    .eq("id", file.id);
 +
++  if (updateError) {
++    alert(updateError.message);
++    return;
++  }
++
 +  await loadFiles();
-+  updateStatus("File renamed");
++  updateStatus("Renamed");
 +}
 +
 +async function deleteFile(file) {
-+  const confirmed = confirm(`Delete ${file.name}?`);
-+  if (!confirmed) return;
++  if (!confirm(`Delete "${file.name}"?`)) return;
 +
-+  const { error } = await supabaseClient.storage
-+    .from("drive")
-+    .remove([file.path]);
-+
-+  if (error) {
-+    alert(error.message);
++  if (demoMode) {
++    files = files.filter((item) => item.id !== file.id);
++    renderFiles();
++    updateStorageUsage();
++    updateStatus("Deleted in demo mode");
 +    return;
 +  }
 +
-+  await supabaseClient.from("files").delete().eq("id", file.id);
-+  await loadFiles();
-+  updateStatus("File deleted");
-+}
-+
-+function formatSize(bytes) {
-+  if (!bytes) return "0 B";
-+  const units = ["B", "KB", "MB", "GB"];
-+  let size = bytes;
-+  let unitIndex = 0;
-+  while (size >= 1024 && unitIndex < units.length - 1) {
-+    size /= 1024;
-+    unitIndex += 1;
++  const { error: removeError } = await supabaseClient.storage.from("drive").remove([file.path]);
++  if (removeError) {
++    alert(removeError.message);
++    return;
 +  }
-+  return `${size.toFixed(size < 10 ? 1 : 0)} ${units[unitIndex]}`;
-+}
 +
-+function formatDate(dateString) {
-+  if (!dateString) return "Unknown";
-+  return new Date(dateString).toLocaleDateString();
++  const { error: deleteError } = await supabaseClient.from("files").delete().eq("id", file.id);
++  if (deleteError) {
++    alert(deleteError.message);
++    return;
++  }
++
++  await loadFiles();
++  updateStatus("Deleted");
 +}
 +
 +function updateStorageUsage() {
-+  const totalBytes = files.reduce((sum, file) => sum + (file.size || 0), 0);
-+  const maxBytes = 2 * 1024 * 1024 * 1024;
-+  const percent = Math.min((totalBytes / maxBytes) * 100, 100);
++  const total = files.reduce((sum, file) => sum + (file.size || 0), 0);
++  const max = 2 * 1024 * 1024 * 1024;
++  const percent = Math.min((total / max) * 100, 100);
 +  document.getElementById("storageFill").style.width = `${percent}%`;
-+  document.getElementById("storageText").textContent =
-+    `${formatSize(totalBytes)} of 2 GB used`;
++  document.getElementById("storageText").textContent = `${formatSize(total)} of 2 GB used`;
 +}
 +
 +function updateStatus(message) {
 +  document.getElementById("statusText").textContent = message;
 +}
 +
++function formatSize(bytes = 0) {
++  if (!bytes) return "0 B";
++  const units = ["B", "KB", "MB", "GB"];
++  let value = bytes;
++  let index = 0;
++  while (value >= 1024 && index < units.length - 1) {
++    value /= 1024;
++    index += 1;
++  }
++  return `${value.toFixed(value < 10 && index > 0 ? 1 : 0)} ${units[index]}`;
++}
++
++function formatDate(date) {
++  if (!date) return "Unknown";
++  return new Date(date).toLocaleDateString();
++}
++
++function getExtension(name = "") {
++  const split = name.split(".");
++  if (split.length < 2) return "FILE";
++  return split.pop().slice(0, 4).toUpperCase();
++}
++
 +async function logout() {
++  if (demoMode) {
++    window.location.href = "login.html";
++    return;
++  }
++
 +  await supabaseClient.auth.signOut();
 +  window.location.href = "login.html";
 +}
