@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive - Ultimate Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --bg-color: #f7f9fc;
+            --surface-color: #ffffff;
+            --text-main: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
+            --hover-color: #f1f3f4;
+            --sidebar-width: 256px;
+            --header-height: 64px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--surface-color); color: var(--text-main); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+        /* --- MODALS & OVERLAYS --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; display: none;
+            justify-content: center; align-items: center;
+        }
+        
+        .modal {
+            background: white; width: 400px; padding: 24px; border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .modal h3 { margin-bottom: 10px; font-weight: 500; }
+        .modal input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+        
+        .btn { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: 500; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-secondary { background: white; color: var(--primary-color); }
+        .btn-secondary:hover { background: #f5f5f5; }
+
+        /* --- HEADER --- */
+        header { height: var(--header-height); display: flex; align-items: center; padding: 8px 20px; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
+        .logo-area { display: flex; align-items: center; width: var(--sidebar-width); }
+        .logo-area img { height: 40px; margin-right: 8px; }
+        .logo-area span { font-size: 22px; color: var(--text-secondary); }
+        
+        .search-bar { flex: 1; max-width: 720px; background: #edf2fc; height: 48px; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; margin: 0 20px; }
+        .search-bar input { border: none; background: transparent; flex: 1; height: 100%; margin-left: 10px; outline: none; font-size: 16px; }
+
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .avatar { width: 32px; height: 32px; background-color: purple; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- SIDEBAR --- */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: var(--sidebar-width); padding: 12px 0; display: flex; flex-direction: column; }
+        
+        .new-btn {
+            display: flex; align-items: center; width: fit-content; height: 48px; background: white;
+            border-radius: 24px; padding: 0 24px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.1);
+            margin: 0 0 16px 16px; cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .new-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); background-color: #f8faff; }
+        
+        /* New Button Dropdown */
+        .new-dropdown {
+            position: absolute; top: 50px; left: 0; background: white; width: 200px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); border-radius: 4px; display: none; z-index: 100; padding: 5px 0;
+        }
+        .new-dropdown div { padding: 10px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .new-dropdown div:hover { background: #f1f3f4; }
+
+        .nav-item { display: flex; align-items: center; height: 40px; padding-left: 24px; border-radius: 0 20px 20px 0; cursor: pointer; color: var(--text-main); font-size: 14px; margin-right: 12px; }
+        .nav-item.active { background-color: #e8f0fe; color: var(--primary-color); font-weight: 500; }
+        .nav-item:hover:not(.active) { background-color: var(--hover-color); }
+
+        /* --- CONTENT --- */
+        .content { flex: 1; background-color: var(--surface-color); border-radius: 16px 16px 0 0; padding: 16px; overflow-y: auto; border-top: 1px solid var(--border-color); border-left: 1px solid var(--border-color); display: flex; flex-direction: column;}
+        
+        .breadcrumb-bar { font-size: 18px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px; display: flex; gap: 5px; align-items: center; color: var(--text-secondary); }
+        .crumb { cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+        .crumb:hover { background: #f1f3f4; color: black; }
+        .crumb:last-child { color: black; font-weight: 500; cursor: default; }
+        .crumb:last-child:hover { background: none; }
+
+        /* LISTS */
+        .section-title { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin: 20px 0 12px 0; }
+        .file-list-header { display: grid; grid-template-columns: 2fr 1fr 1fr 50px; padding: 8px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+        .file-row { display: grid; grid-template-columns: 2fr 1fr 1fr 50px; padding: 12px 16px; border-bottom: 1px solid #f1f3f4; align-items: center; font-size: 13px; cursor: pointer; user-select: none; }
+        .file-row:hover { background-color: #e8f0fe; }
+        
+        .file-name-cell { display: flex; align-items: center; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-name-cell .material-icons-outlined { margin-right: 12px; font-size: 20px; color: var(--text-secondary); }
+        .folder-icon { color: #5f6368 !important; }
+
+        /* CONTEXT MENU */
+        .menu-btn { border: none; background: transparent; cursor: pointer; border-radius: 50%; padding: 4px; opacity: 0; }
+        .file-row:hover .menu-btn { opacity: 1; }
+        .context-menu {
+            position: absolute; right: 50px; top: 30px; background: white; 
+            border: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            border-radius: 4px; z-index: 100; display: none; width: 160px;
+        }
+        .context-menu div { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .context-menu div:hover { background: #f1f3f4; }
+        
+        /* PROFILE POPUP */
+        .profile-popup {
+            position: absolute; top: 60px; right: 20px; width: 320px; background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 10px; z-index: 150; padding: 20px;
+            display: none; text-align: center; border: 1px solid #e0e0e0;
+        }
+        .profile-popup .large-avatar { width: 80px; height: 80px; background: purple; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: white; position: relative; overflow: hidden; }
+        .profile-popup .large-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .camera-icon {
+            position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); color: white;
+            font-size: 12px; padding: 2px 0; cursor: pointer; display: none;
+        }
+        .large-avatar:hover .camera-icon { display: block; }
+        
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay" class="overlay" style="display: flex; background: white;">
+        <div class="modal" style="text-align: center; border: 1px solid #dadce0; box-shadow: none;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" width="60" style="margin: 0 auto;">
+            <h2>Sign in</h2>
+            <p>to continue to Drive</p>
+            <input type="text" id="loginEmail" placeholder="Email" value="user@example.com">
+            <input type="password" id="loginPass" placeholder="Password" value="password">
+            <button class="btn btn-primary" onclick="login()">Next</button>
+        </div>
+    </div>
+
+    <div id="app" style="display:none; height: 100%; flex-direction: column;">
+        <header>
+            <div class="logo-area">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" alt="Drive">
+                <span>Drive</span>
+            </div>
+            <div class="search-bar">
+                <span class="material-icons-outlined" style="color: #5f6368;">search</span>
+                <input type="text" placeholder="Search in Drive" id="searchInput" onkeyup="renderFiles()">
+            </div>
+            <div class="header-actions">
+                <span class="material-icons-outlined icon-btn">help_outline</span>
+                <span class="material-icons-outlined icon-btn">settings</span>
+                <div class="avatar" onclick="toggleProfile()">
+                    <span id="headerAvatarText">U</span>
+                    <img id="headerAvatarImg" style="display:none;">
+                </div>
+            </div>
+            
+            <div class="profile-popup" id="profilePopup">
+                <div class="large-avatar" onclick="document.getElementById('profilePicInput').click()">
+                    <span id="popupAvatarText">U</span>
+                    <img id="popupAvatarImg" style="display:none;">
+                    <div class="camera-icon">CHANGE</div>
+                </div>
+                <h3 id="displayName">User Name</h3>
+                <p id="displayEmail" style="color:gray; font-size:14px; margin-bottom:15px;">user@example.com</p>
+                <button class="btn btn-secondary" style="border:1px solid #dadce0" onclick="openSettings()">Manage Account</button>
+                <div style="border-top:1px solid #eee; margin-top:15px; padding-top:10px;">
+                    <button class="btn" style="background:white; border:1px solid #ccc" onclick="location.reload()">Sign out</button>
+                </div>
+                <input type="file" id="profilePicInput" hidden onchange="uploadProfilePic(event)">
+            </div>
+        </header>
+
+        <div class="main-container">
+            <aside class="sidebar">
+                <div class="new-btn" onclick="toggleNewMenu()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Plus_symbol.svg" width="24">
+                    <span>New</span>
+                    <div class="new-dropdown" id="newMenu">
+                        <div onclick="createFolderPrompt()"><span class="material-icons-outlined">create_new_folder</span> New Folder</div>
+                        <div onclick="document.getElementById('fileUpload').click()"><span class="material-icons-outlined">upload_file</span> File Upload</div>
+                        <div onclick="createTxtFile()"><span class="material-icons-outlined">description</span> Google Docs (Mock)</div>
+                    </div>
+                </div>
+                <input type="file" id="fileUpload" hidden onchange="handleFileUpload(event)">
+                
+                <div class="nav-item active"><span class="material-icons-outlined">hard_drive</span> My Drive</div>
+                <div class="nav-item"><span class="material-icons-outlined">people</span> Shared with me</div>
+                <div class="nav-item"><span class="material-icons-outlined">schedule</span> Recent</div>
+                <div class="nav-item"><span class="material-icons-outlined">delete</span> Trash</div>
+            </aside>
+
+            <main class="content">
+                <div class="breadcrumb-bar" id="breadcrumbs">
+                    </div>
+
+                <div class="file-list-header">
+                    <div>Name</div>
+                    <div>Owner</div>
+                    <div>Last Modified</div>
+                    <div></div>
+                </div>
+                <div id="fileList">
+                    </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="overlay">
+        <div class="modal">
+            <h3>Account Settings</h3>
+            <label>Display Name</label>
+            <input type="text" id="settingsName">
+            <label>Change Password</label>
+            <input type="password" id="settingsPass" placeholder="New Password">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeOverlay('settingsModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="moveModal" class="overlay">
+        <div class="modal">
+            <h3>Move to...</h3>
+            <p style="font-size:14px; color:gray; margin-bottom:10px;">Select a destination folder:</p>
+            <div id="folderList" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px;">
+                </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeOverlay('moveModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmMove()">Move Here</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE MANAGEMENT ---
+        let currentUser = { name: "User", email: "user@example.com", avatar: null };
+        let currentFolderId = null; // null = Root
+        let selectedFileIdForMove = null;
+        
+        // Mock Database
+        // Types: 'folder' or 'file'
+        let fileSystem = [
+            { id: 1, parentId: null, name: "Documents", type: "folder", owner: "me", date: "Jan 10" },
+            { id: 2, parentId: null, name: "Images", type: "folder", owner: "me", date: "Jan 12" },
+            { id: 3, parentId: 1, name: "Resume.pdf", type: "file", owner: "me", date: "Feb 01" },
+            { id: 4, parentId: null, name: "Project_Budget.xlsx", type: "file", owner: "me", date: "Today" }
+        ];
+
+        // --- AUTHENTICATION ---
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            if(email) {
+                currentUser.email = email;
+                currentUser.name = email.split('@')[0];
+                updateProfileUI();
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                renderFiles();
+                renderBreadcrumbs();
+            }
+        }
+
+        function updateProfileUI() {
+            document.getElementById('displayName').innerText = currentUser.name;
+            document.getElementById('displayEmail').innerText = currentUser.email;
+            document.getElementById('headerAvatarText').innerText = currentUser.name[0].toUpperCase();
+            document.getElementById('popupAvatarText').innerText = currentUser.name[0].toUpperCase();
+            
+            if(currentUser.avatar) {
+                document.getElementById('headerAvatarImg').src = currentUser.avatar;
+                document.getElementById('popupAvatarImg').src = currentUser.avatar;
+                document.getElementById('headerAvatarImg').style.display = 'block';
+                document.getElementById('popupAvatarImg').style.display = 'block';
+                document.getElementById('headerAvatarText').style.display = 'none';
+                document.getElementById('popupAvatarText').style.display = 'none';
+            }
+        }
+
+        function toggleProfile() {
+            const el = document.getElementById('profilePopup');
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // --- FILES & FOLDERS ENGINE ---
+        
+        // Render List
+        function renderFiles() {
+            const list = document.getElementById('fileList');
+            list.innerHTML = '';
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            // Filter by Folder AND Search
+            let items = fileSystem.filter(f => {
+                const matchFolder = f.parentId === currentFolderId;
+                const matchSearch = f.name.toLowerCase().includes(search);
+                // If searching, ignore folder structure and show all matches
+                return search ? matchSearch : matchFolder;
+            });
+
+            // Sort: Folders first
+            items.sort((a,b) => (a.type === b.type ? 0 : a.type === 'folder' ? -1 : 1));
+
+            items.forEach(file => {
+                const row = document.createElement('div');
+                row.className = 'file-row';
+                row.ondblclick = () => { if(file.type === 'folder') enterFolder(file.id); };
+                
+                // Icon Logic
+                let icon = 'description';
+                let color = '#5f6368';
+                if(file.type === 'folder') { icon = 'folder'; color = '#5f6368'; }
+                else if(file.name.endsWith('.pdf')) { icon = 'picture_as_pdf'; color = '#ea4335'; }
+                else if(file.name.endsWith('.xlsx')) { icon = 'table_view'; color = '#188038'; }
+                else if(file.name.endsWith('.png')) { icon = 'image'; color = '#d93025'; }
+
+                row.innerHTML = `
+                    <div class="file-name-cell">
+                        <span class="material-icons-outlined" style="margin-right:12px; color:${color};">${icon}</span>
+                        ${file.name}
+                    </div>
+                    <div>${file.owner}</div>
+                    <div>${file.date}</div>
+                    <div style="position:relative">
+                        <button class="menu-btn" onclick="toggleContextMenu(event, ${file.id})">
+                            <span class="material-icons-outlined">more_vert</span>
+                        </button>
+                        <div id="menu-${file.id}" class="context-menu">
+                            <div onclick="initRename(${file.id})"><span class="material-icons-outlined">edit</span> Rename</div>
+                            <div onclick="initMove(${file.id})"><span class="material-icons-outlined">drive_file_move</span> Move to</div>
+                            <div onclick="deleteFile(${file.id})" style="color:red"><span class="material-icons-outlined">delete</span> Remove</div>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        // Navigation
+        function enterFolder(id) {
+            currentFolderId = id;
+            renderFiles();
+            renderBreadcrumbs();
+        }
+
+        function navigateTo(id) {
+            currentFolderId = id;
+            renderFiles();
+            renderBreadcrumbs();
+        }
+
+        function renderBreadcrumbs() {
+            const b = document.getElementById('breadcrumbs');
+            b.innerHTML = '';
+            
+            // Build path
+            let path = [];
+            let curr = currentFolderId;
+            while(curr !== null) {
+                let f = fileSystem.find(x => x.id === curr);
+                if(f) { path.unshift({id: f.id, name: f.name}); curr = f.parentId; } 
+                else { curr = null; }
+            }
+            path.unshift({id: null, name: "My Drive"});
+
+            path.forEach((p, idx) => {
+                const span = document.createElement('span');
+                span.className = 'crumb';
+                span.innerText = p.name;
+                span.onclick = () => navigateTo(p.id);
+                b.appendChild(span);
+                
+                if(idx < path.length -1) {
+                    const arrow = document.createElement('span');
+                    arrow.innerText = '>';
+                    arrow.style.fontSize = '14px';
+                    b.appendChild(arrow);
+                }
+            });
+        }
+
+        // --- ACTIONS ---
+
+        // 1. Create Folder
+        function createFolderPrompt() {
+            const name = prompt("New Folder Name:", "Untitled folder");
+            if(name) {
+                fileSystem.push({
+                    id: Date.now(),
+                    parentId: currentFolderId,
+                    name: name,
+                    type: 'folder',
+                    owner: "me",
+                    date: new Date().toLocaleDateString()
+                });
+                renderFiles();
+            }
+            toggleNewMenu();
+        }
+
+        // 2. Upload File
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if(file) {
+                fileSystem.push({
+                    id: Date.now(),
+                    parentId: currentFolderId,
+                    name: file.name,
+                    type: 'file',
+                    owner: "me",
+                    date: new Date().toLocaleDateString()
+                });
+                renderFiles();
+            }
+            toggleNewMenu();
+        }
+        
+        // 3. Create Text File
+        function createTxtFile() {
+             const name = prompt("File Name:", "Untitled.txt");
+             if(name) {
+                fileSystem.push({
+                    id: Date.now(),
+                    parentId: currentFolderId,
+                    name: name.endsWith('.txt') ? name : name + '.txt',
+                    type: 'file',
+                    owner: "me",
+                    date: new Date().toLocaleDateString()
+                });
+                renderFiles();
+             }
+             toggleNewMenu();
+        }
+
+        // 4. Smart Rename (Preserves Extension)
+        function initRename(id) {
+            closeContextMenus();
+            const file = fileSystem.find(f => f.id === id);
+            
+            // Extract Name and Extension
+            let namePart = file.name;
+            let extPart = "";
+            
+            if(file.type === 'file' && file.name.includes('.')) {
+                const parts = file.name.split('.');
+                extPart = '.' + parts.pop();
+                namePart = parts.join('.');
+            }
+
+            const newName = prompt("Rename:", namePart);
+            if(newName && newName !== namePart) {
+                file.name = newName + extPart;
+                renderFiles();
+            }
+        }
+
+        // 5. Move File (Modal)
+        function initMove(id) {
+            closeContextMenus();
+            selectedFileIdForMove = id;
+            
+            const list = document.getElementById('folderList');
+            list.innerHTML = `<div style="padding:10px; cursor:pointer;" onclick="selectFolder(null)">My Drive (Root)</div>`;
+            
+            // Add all folders except self (if folder) and current parent
+            fileSystem.filter(f => f.type === 'folder' && f.id !== id).forEach(f => {
+                list.innerHTML += `<div style="padding:10px; cursor:pointer; border-top:1px solid #eee;" onclick="selectFolder(${f.id})">📁 ${f.name}</div>`;
+            });
+            
+            document.getElementById('moveModal').style.display = 'flex';
+        }
+
+        let targetMoveFolderId = null;
+        function selectFolder(id) {
+            targetMoveFolderId = id;
+            // Visual feedback could be added here
+            document.querySelectorAll('#folderList div').forEach(d => d.style.background = 'white');
+            event.target.style.background = '#e8f0fe';
+        }
+
+        function confirmMove() {
+            const file = fileSystem.find(f => f.id === selectedFileIdForMove);
+            if(file) {
+                file.parentId = targetMoveFolderId;
+                renderFiles();
+            }
+            closeOverlay('moveModal');
+        }
+
+        function deleteFile(id) {
+            if(confirm("Remove this item?")) {
+                fileSystem = fileSystem.filter(f => f.id !== id);
+                renderFiles();
+            }
+        }
+
+        // --- SETTINGS & PROFILE ---
+        function openSettings() {
+            document.getElementById('profilePopup').style.display = 'none';
+            document.getElementById('settingsName').value = currentUser.name;
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function uploadProfilePic(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(res) {
+                    currentUser.avatar = res.target.result;
+                    updateProfileUI();
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveSettings() {
+            const newName = document.getElementById('settingsName').value;
+            const newPass = document.getElementById('settingsPass').value;
+            
+            if(newName) currentUser.name = newName;
+            if(newPass) alert("Password changed successfully!");
+            
+            updateProfileUI();
+            closeOverlay('settingsModal');
+        }
+
+        // --- UTILS ---
+        function toggleNewMenu() {
+            const m = document.getElementById('newMenu');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleContextMenu(e, id) {
+            e.stopPropagation();
+            closeContextMenus();
+            document.getElementById('menu-'+id).style.display = 'block';
+        }
+
+        function closeContextMenus() {
+            document.querySelectorAll('.context-menu').forEach(e => e.style.display = 'none');
+        }
+
+        function closeOverlay(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.new-btn') && !event.target.closest('.new-btn')) {
+                document.getElementById('newMenu').style.display = 'none';
+            }
+            if (!event.target.closest('.menu-btn')) {
+                closeContextMenus();
+            }
+        }
+    </script>
+</body>
+</html>
