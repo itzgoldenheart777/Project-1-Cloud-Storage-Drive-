@@ -1,324 +1,491 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/dashboard.html b/dashboard.html
-index 1722d80c5a5109b678bd41f28fd5cff7e53ea500..2be91890f03c2521c681c5b6361ed2a6666d8a8b 100644
---- a/dashboard.html
-+++ b/dashboard.html
-@@ -1,175 +1,140 @@
-- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
--diff --git a/dashboard.html b/dashboard.html
--index 197be3563cd8a3510356651b77ca9f7d988256bc..865013d382fe9140f62e1102de7b4d02aecac3ed 100644
----- a/dashboard.html
--+++ b/dashboard.html
--@@ -1,62 +1,137 @@
-- <!DOCTYPE html>
---<html>
--+<html lang="en">
-- <head>
--+  <meta charset="UTF-8">
--+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
--   <title>My Drive</title>
--   <link rel="stylesheet" href="css/dashboard.css">
-- </head>
---<body>
---
---  <!-- TOP BAR -->
--+<body class="dashboard">
--   <div class="topbar">
---    <h2>My Drive</h2>
--+    <div class="brand">
--+      <span class="logo">Drive</span>
--+      <span class="app-name">Cloud Storage</span>
--+    </div>
--+
--+    <div class="search">
--+      <input id="searchInput" type="search" placeholder="Search in Drive" aria-label="Search in Drive">
--+    </div>
--+
--+    <div class="top-actions">
--+      <button class="btn ghost" id="refreshBtn">Refresh</button>
--+      <button class="btn primary" id="uploadBtn">Upload</button>
--+      <input type="file" id="fileInput" multiple hidden>
-- 
---    <div class="user-area">
---      <button id="avatarBtn" aria-haspopup="true">
---        <img id="userAvatar"
---             src="https://ui-avatars.com/api/?name=User"
---             alt="User Avatar">
---      </button>
--+      <div class="user-area">
--+        <button id="avatarBtn" aria-haspopup="true" aria-expanded="false">
--+          <img id="userAvatar"
--+               src="https://ui-avatars.com/api/?name=User"
--+               alt="User Avatar">
--+        </button>
-- 
---      <div id="userMenu" class="dropdown hidden">
---        <button onclick="viewDetails()">View Details</button>
---        <button onclick="openProfile()">Edit Profile</button>
---        <button onclick="resetPassword()">Reset Password</button>
---        <button onclick="logout()">Logout</button>
--+        <div id="userMenu" class="dropdown hidden" role="menu">
--+          <button onclick="viewDetails()">View Details</button>
--+          <button onclick="openProfile()">Edit Profile</button>
--+          <button onclick="resetPassword()">Reset Password</button>
--+          <button onclick="logout()">Logout</button>
--+        </div>
--       </div>
--     </div>
--   </div>
-- 
---  <!-- PROFILE MODAL -->
--+  <div class="layout">
--+    <aside class="sidebar">
--+      <button class="btn primary full" id="newUploadBtn">New Upload</button>
--+      <nav class="nav">
--+        <button class="nav-item active">My Drive</button>
--+        <button class="nav-item">Shared with me</button>
--+        <button class="nav-item">Starred</button>
--+        <button class="nav-item">Trash</button>
--+      </nav>
--+      <div class="storage">
--+        <p>Storage</p>
--+        <div class="storage-bar">
--+          <span id="storageFill"></span>
--+        </div>
--+        <small id="storageText">0 MB of 2 GB used</small>
--+      </div>
--+    </aside>
--+
--+    <main class="content">
--+      <div class="content-header">
--+        <div>
--+          <p class="breadcrumb">My Drive</p>
--+          <h1>Files</h1>
--+        </div>
--+        <div class="view-toggle" role="group" aria-label="View toggle">
--+          <button class="btn ghost active" data-view="grid">Grid</button>
--+          <button class="btn ghost" data-view="list">List</button>
--+        </div>
--+      </div>
--+
--+      <div class="toolbar">
--+        <div class="toolbar-left">
--+          <label>
--+            Sort by
--+            <select id="sortSelect">
--+              <option value="name-asc">Name (A-Z)</option>
--+              <option value="name-desc">Name (Z-A)</option>
--+              <option value="time-desc">Newest</option>
--+              <option value="time-asc">Oldest</option>
--+            </select>
--+          </label>
--+        </div>
--+        <div class="toolbar-right" id="statusText">Ready</div>
--+      </div>
--+
--+      <section id="dropZone" class="drop-zone">
--+        <p>Drag and drop files here to upload</p>
--+      </section>
--+
--+      <div id="fileList" class="file-grid"></div>
--+    </main>
--+  </div>
--+
--   <div id="profileModal" class="modal hidden">
--     <div class="modal-content">
--       <h2>Edit Profile</h2>
-- 
---      <img id="avatarPreview" width="100" />
--+      <img id="avatarPreview" width="96" height="96" alt="Avatar preview" />
-- 
--       <input type="file" id="avatarInput" accept="image/*">
--       <input type="text" id="displayName" placeholder="Full Name">
--       <input type="email" id="emailField" disabled>
-- 
--       <div class="modal-buttons">
---        <button onclick="saveProfile()">Save</button>
---        <button onclick="closeProfile()">Cancel</button>
--+        <button class="btn primary" onclick="saveProfile()">Save</button>
--+        <button class="btn ghost" onclick="closeProfile()">Cancel</button>
--       </div>
--     </div>
--   </div>
-- 
---  <!-- UPLOAD SECTION -->
---  <div class="upload-section">
---    <input type="file" id="fileInput">
---    <button onclick="uploadFile()">Upload</button>
--+  <div id="detailsModal" class="modal hidden">
--+    <div class="modal-content">
--+      <h2>Account Details</h2>
--+      <div class="detail-item">
--+        <span>Email</span>
--+        <strong id="detailEmail">-</strong>
--+      </div>
--+      <div class="detail-item">
--+        <span>Name</span>
--+        <strong id="detailName">-</strong>
--+      </div>
--+      <div class="detail-item">
--+        <span>Last sign in</span>
--+        <strong id="detailSignIn">-</strong>
--+      </div>
--+      <div class="modal-buttons">
--+        <button class="btn primary" onclick="closeDetails()">Close</button>
--+      </div>
--+    </div>
--   </div>
-- 
---  <!-- FILE LIST -->
---  <div id="fileList" class="file-grid"></div>
---
---  <!-- SUPABASE -->
--   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
--   <script src="js/supabaseClient.js"></script>
--   <script src="js/dashboard.js"></script>
---
-- </body>
-- </html>
-- 
--EOF
--)
-+<!DOCTYPE html>
-+<html lang="en">
-+<head>
-+  <meta charset="UTF-8">
-+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-+  <title>My Drive</title>
-+  <link rel="stylesheet" href="css/dashboard.css">
-+</head>
-+<body class="dashboard">
-+  <header class="topbar">
-+    <button class="icon-btn mobile-only" id="menuToggle" aria-label="Open navigation">☰</button>
-+
-+    <div class="brand">
-+      <span class="logo-mark">◆</span>
-+      <span class="logo-text">Drive</span>
-+    </div>
-+
-+    <div class="search-wrap">
-+      <span class="search-icon">⌕</span>
-+      <input id="searchInput" type="search" placeholder="Search in Drive" aria-label="Search in Drive">
-+    </div>
-+
-+    <div class="top-actions">
-+      <button class="btn ghost" id="refreshBtn">Refresh</button>
-+      <button class="btn primary" id="uploadBtn">Upload</button>
-+      <input type="file" id="fileInput" multiple hidden>
-+
-+      <div class="user-area">
-+        <button id="avatarBtn" aria-haspopup="true" aria-expanded="false">
-+          <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" alt="User Avatar">
-+        </button>
-+        <div id="userMenu" class="dropdown hidden" role="menu">
-+          <button onclick="viewDetails()">View details</button>
-+          <button onclick="openProfile()">Edit profile</button>
-+          <button onclick="resetPassword()">Reset password</button>
-+          <button onclick="logout()">Logout</button>
-+        </div>
-+      </div>
-+    </div>
-+  </header>
-+
-+  <div class="app-shell">
-+    <aside class="sidebar" id="sidebar">
-+      <button class="btn primary full" id="newUploadBtn">+ New upload</button>
-+
-+      <nav class="nav">
-+        <button class="nav-item active">My Drive</button>
-+        <button class="nav-item">Computers</button>
-+        <button class="nav-item">Shared with me</button>
-+        <button class="nav-item">Recent</button>
-+        <button class="nav-item">Starred</button>
-+        <button class="nav-item">Trash</button>
-+      </nav>
-+
-+      <section class="storage">
-+        <p>Storage</p>
-+        <div class="storage-bar">
-+          <span id="storageFill"></span>
-+        </div>
-+        <small id="storageText">0 MB of 2 GB used</small>
-+      </section>
-+    </aside>
-+
-+    <main class="content">
-+      <div class="content-header">
-+        <div>
-+          <p class="breadcrumb">My Drive</p>
-+          <h1>My Drive</h1>
-+        </div>
-+
-+        <div class="header-controls">
-+          <div class="chips">
-+            <button class="chip">Type</button>
-+            <button class="chip">People</button>
-+            <button class="chip">Modified</button>
-+            <button class="chip">Source</button>
-+          </div>
-+
-+          <div class="view-toggle" role="group" aria-label="View toggle">
-+            <button class="btn ghost active" data-view="grid">Grid</button>
-+            <button class="btn ghost" data-view="list">List</button>
-+          </div>
-+        </div>
-+      </div>
-+
-+      <div class="toolbar">
-+        <label>
-+          Sort by
-+          <select id="sortSelect">
-+            <option value="name-asc">Name (A-Z)</option>
-+            <option value="name-desc">Name (Z-A)</option>
-+            <option value="time-desc">Newest</option>
-+            <option value="time-asc">Oldest</option>
-+            <option value="size-desc">Largest</option>
-+            <option value="size-asc">Smallest</option>
-+          </select>
-+        </label>
-+        <span id="statusText">Ready</span>
-+      </div>
-+
-+      <section id="dropZone" class="drop-zone">
-+        <h3>Drop files here to upload</h3>
-+        <p>Or click <strong>Upload</strong> to select files from your device.</p>
-+      </section>
-+
-+      <div id="fileList" class="file-grid" aria-live="polite"></div>
-+    </main>
-+  </div>
-+
-+  <div id="profileModal" class="modal hidden" role="dialog" aria-modal="true">
-+    <div class="modal-content">
-+      <h2>Edit profile</h2>
-+      <img id="avatarPreview" width="96" height="96" alt="Avatar preview">
-+      <input type="file" id="avatarInput" accept="image/*">
-+      <input type="text" id="displayName" placeholder="Full Name">
-+      <input type="email" id="emailField" disabled>
-+      <div class="modal-buttons">
-+        <button class="btn primary" onclick="saveProfile()">Save</button>
-+        <button class="btn ghost" onclick="closeProfile()">Cancel</button>
-+      </div>
-+    </div>
-+  </div>
-+
-+  <div id="detailsModal" class="modal hidden" role="dialog" aria-modal="true">
-+    <div class="modal-content">
-+      <h2>Account details</h2>
-+      <div class="detail-item"><span>Email</span><strong id="detailEmail">-</strong></div>
-+      <div class="detail-item"><span>Name</span><strong id="detailName">-</strong></div>
-+      <div class="detail-item"><span>Last sign in</span><strong id="detailSignIn">-</strong></div>
-+      <div class="modal-buttons">
-+        <button class="btn primary" onclick="closeDetails()">Close</button>
-+      </div>
-+    </div>
-+  </div>
-+
-+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-+  <script src="js/supabaseClient.js"></script>
-+  <script src="js/dashboard.js"></script>
-+</body>
-+</html>
- 
-EOF
-)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Drive - Google Drive Clone</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --bg-color: #f7f9fc;
+            --surface-color: #ffffff;
+            --text-main: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
+            --hover-color: #f1f3f4;
+            --sidebar-width: 256px;
+            --header-height: 64px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--surface-color);
+            color: var(--text-main);
+            overflow: hidden; /* App-like feel */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 8px 20px;
+            border-bottom: 1px solid transparent;
+            justify-content: space-between;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            width: var(--sidebar-width);
+        }
+
+        .logo-area img {
+            height: 40px;
+            margin-right: 8px;
+        }
+
+        .logo-area span {
+            font-size: 22px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 720px;
+            background: #edf2fc;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .search-bar:focus-within {
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            flex: 1;
+            height: 100%;
+            margin-left: 10px;
+            font-size: 16px;
+            outline: none;
+            color: var(--text-main);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            min-width: 150px;
+            justify-content: flex-end;
+        }
+
+        .icon-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            color: var(--text-secondary);
+        }
+
+        .icon-btn:hover {
+            background-color: rgba(60, 64, 67, 0.08);
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: purple;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .new-btn {
+            display: flex;
+            align-items: center;
+            width: fit-content;
+            height: 48px;
+            background: white;
+            border-radius: 24px;
+            padding: 0 24px 0 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.1);
+            margin: 0 0 16px 16px;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .new-btn:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background-color: #f8faff;
+        }
+
+        .new-btn span:last-child {
+            margin-left: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #3c4043;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            padding-left: 24px;
+            border-radius: 0 20px 20px 0;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 14px;
+            margin-right: 12px;
+        }
+
+        .nav-item.active {
+            background-color: #e8f0fe;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .nav-item:hover:not(.active) {
+            background-color: var(--hover-color);
+        }
+
+        .nav-item .material-icons-outlined {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* CONTENT AREA */
+        .content {
+            flex: 1;
+            background-color: var(--surface-color);
+            border-radius: 16px 16px 0 0; /* Modern look */
+            padding: 16px;
+            overflow-y: auto;
+            border-top: 1px solid var(--border-color);
+            border-left: 1px solid var(--border-color);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .breadcrumb {
+            font-size: 18px;
+            color: var(--text-main);
+        }
+
+        /* GRID VIEW */
+        .section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin: 20px 0 12px 0;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .folder-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .folder-card:hover {
+            background-color: #e8f0fe;
+            border-color: transparent;
+        }
+
+        .folder-card .icon {
+            color: var(--text-secondary);
+            margin-right: 12px;
+        }
+        
+        .folder-name {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        /* FILE LIST VIEW */
+        .file-list-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .file-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            align-items: center;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .file-row:hover {
+            background-color: #e8f0fe;
+        }
+
+        .file-name-cell {
+            display: flex;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        .file-name-cell .material-icons-outlined {
+            margin-right: 12px;
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+
+        /* UTILS */
+        .storage-bar {
+            margin: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .progress {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 75%; /* Fake storage usage */
+        }
+
+        .storage-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" alt="Drive Logo">
+            <span>Drive</span>
+        </div>
+
+        <div class="search-bar">
+            <span class="material-icons-outlined" style="color: #5f6368;">search</span>
+            <input type="text" placeholder="Search in Drive" id="searchInput">
+            <span class="material-icons-outlined icon-btn">tune</span>
+        </div>
+
+        <div class="header-actions">
+            <button class="icon-btn"><span class="material-icons-outlined">help_outline</span></button>
+            <button class="icon-btn"><span class="material-icons-outlined">settings</span></button>
+            <button class="icon-btn"><span class="material-icons-outlined">apps</span></button>
+            <div class="avatar">U</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="new-btn" onclick="createNew()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Plus_symbol.svg" width="24" alt="+">
+                <span>New</span>
+            </div>
+
+            <div class="nav-item active">
+                <span class="material-icons-outlined">hard_drive</span>
+                My Drive
+            </div>
+            <div class="nav-item">
+                <span class="material-icons-outlined">devices</span>
+                Computers
+            </div>
+            <div class="nav-item">
+                <span class="material-icons-outlined">people</span>
+                Shared with me
+            </div>
+            <div class="nav-item">
+                <span class="material-icons-outlined">schedule</span>
+                Recent
+            </div>
+            <div class="nav-item">
+                <span class="material-icons-outlined">star_border</span>
+                Starred
+            </div>
+            <div class="nav-item">
+                <span class="material-icons-outlined">delete</span>
+                Trash
+            </div>
+
+            <div class="storage-bar">
+                <div class="progress"><div class="progress-fill"></div></div>
+                <div class="storage-text">11.5 GB of 15 GB used</div>
+                <button style="border:1px solid var(--border-color); background:none; color:var(--primary-color); border-radius:4px; padding:6px 12px; margin-top:8px; font-weight:500; cursor:pointer;">Get more storage</button>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div class="content-header">
+                <div class="breadcrumb">My Drive</div>
+                <div class="view-options">
+                    <button class="icon-btn"><span class="material-icons-outlined">list</span></button>
+                    <button class="icon-btn"><span class="material-icons-outlined">info</span></button>
+                </div>
+            </div>
+
+            <div class="section-title">Folders</div>
+            <div class="grid-container" id="folderGrid">
+                </div>
+
+            <div class="section-title">Files</div>
+            <div class="file-list-header">
+                <div>Name</div>
+                <div>Owner</div>
+                <div>Last Modified</div>
+            </div>
+            <div id="fileList">
+                </div>
+        </main>
+    </div>
+
+    <script>
+        // MOCK DATA
+        const folders = [
+            { name: "Documents", color: "gray" },
+            { name: "Images", color: "gray" },
+            { name: "Project Alpha", color: "gray" },
+            { name: "Finance 2024", color: "gray" },
+            { name: "Vacation Photos", color: "gray" },
+            { name: "Website Assets", color: "gray" }
+        ];
+
+        const files = [
+            { name: "Project_Proposal.docx", owner: "me", date: "Feb 20, 2024", icon: "description", color: "#4285f4" },
+            { name: "Budget_Sheet.xlsx", owner: "me", date: "Feb 18, 2024", icon: "table_view", color: "#0f9d58" },
+            { name: "Presentation.pptx", owner: "John Doe", date: "Feb 15, 2024", icon: "slideshow", color: "#f4b400" },
+            { name: "logo_transparent.png", owner: "me", date: "Jan 10, 2024", icon: "image", color: "#db4437" },
+            { name: "meeting_notes.txt", owner: "me", date: "Yesterday", icon: "article", color: "#4285f4" }
+        ];
+
+        // RENDER FOLDERS
+        const folderGrid = document.getElementById('folderGrid');
+        folders.forEach(folder => {
+            const div = document.createElement('div');
+            div.className = 'folder-card';
+            div.innerHTML = `
+                <span class="material-icons-outlined icon" style="color: #5f6368">folder</span>
+                <span class="folder-name">${folder.name}</span>
+            `;
+            folderGrid.appendChild(div);
+        });
+
+        // RENDER FILES
+        const fileList = document.getElementById('fileList');
+        
+        function renderFiles(fileData) {
+            fileList.innerHTML = ''; // Clear current list
+            fileData.forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'file-row';
+                div.innerHTML = `
+                    <div class="file-name-cell">
+                        <span class="material-icons-outlined" style="color: ${file.color}">${file.icon}</span>
+                        <span>${file.name}</span>
+                    </div>
+                    <div>${file.owner}</div>
+                    <div>${file.date}</div>
+                `;
+                fileList.appendChild(div);
+            });
+        }
+
+        // Initial Render
+        renderFiles(files);
+
+        // SIMPLE SEARCH FUNCTIONALITY
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filteredFiles = files.filter(file => file.name.toLowerCase().includes(term));
+            renderFiles(filteredFiles);
+        });
+
+        // CREATE NEW BUTTON ACTION
+        function createNew() {
+            alert("This simulates the 'New' menu (Upload, Create Folder, etc.)");
+        }
+        
+        // SIDEBAR NAVIGATION HIGHLIGHT
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
