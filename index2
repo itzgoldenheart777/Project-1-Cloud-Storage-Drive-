@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Drive - Real Database Version</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --bg: #f7f9fc;
+            --text: #202124;
+            --border: #dadce0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+        body { background: var(--bg); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* --- AUTH SCREENS --- */
+        .auth-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 999; display: flex; 
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        
+        .auth-box {
+            width: 400px; padding: 40px; border: 1px solid var(--border); 
+            border-radius: 8px; text-align: center; background: white;
+        }
+
+        .auth-box input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;
+        }
+        
+        .btn {
+            background: var(--primary); color: white; padding: 10px 24px; 
+            border: none; border-radius: 4px; font-weight: 500; cursor: pointer; width: 100%;
+        }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .link { color: var(--primary); cursor: pointer; font-size: 14px; margin-top: 15px; display: block; }
+        
+        .error-msg { color: red; font-size: 13px; margin: 10px 0; display: none; }
+        .success-msg { color: green; font-size: 13px; margin: 10px 0; display: none; }
+
+        /* --- DASHBOARD STYLES --- */
+        #dashboard { display: none; height: 100%; flex-direction: column; }
+        
+        header { height: 64px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border); background: white; justify-content: space-between; }
+        .logo { display: flex; align-items: center; font-size: 22px; color: #5f6368; gap: 10px; }
+        .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .avatar { width: 32px; height: 32px; background: purple; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        .main { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 250px; padding: 15px; background: white; }
+        .content { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg); }
+        
+        .new-btn {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2); border-radius: 24px; width: 120px;
+            padding: 10px 20px; display: flex; align-items: center; gap: 10px; 
+            cursor: pointer; background: white; margin-bottom: 20px;
+        }
+
+        .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .file-card {
+            background: white; border: 1px solid var(--border); border-radius: 8px;
+            padding: 15px; cursor: pointer; display: flex; flex-direction: column; gap: 10px;
+        }
+        .file-card:hover { background: #e8f0fe; border-color: transparent; }
+        .file-icon { font-size: 30px; color: #5f6368; }
+
+    </style>
+</head>
+<body>
+
+    <div id="authContainer" class="auth-container">
+        
+        <div id="loginForm" class="auth-box">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" width="60">
+            <h2>Sign in</h2>
+            <p style="color:#5f6368; margin-bottom:20px">to continue to Drive</p>
+            
+            <input type="email" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPass" placeholder="Password">
+            <p class="error-msg" id="loginError"></p>
+            
+            <button class="btn" onclick="handleLogin()">Sign In</button>
+            
+            <span class="link" onclick="switchView('signup')">Create account</span>
+            <span class="link" onclick="switchView('reset')">Forgot password?</span>
+        </div>
+
+        <div id="signupForm" class="auth-box" style="display:none;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" width="60">
+            <h2>Create Account</h2>
+            <p style="color:#5f6368; margin-bottom:20px">Join Google Drive Clone</p>
+            
+            <input type="email" id="signupEmail" placeholder="Email">
+            <input type="password" id="signupPass" placeholder="Password (min 6 chars)">
+            <p class="error-msg" id="signupError"></p>
+            <p class="success-msg" id="signupSuccess"></p>
+            
+            <button class="btn" onclick="handleSignup()">Sign Up</button>
+            <span class="link" onclick="switchView('login')">Back to Login</span>
+        </div>
+
+        <div id="resetForm" class="auth-box" style="display:none;">
+            <h2>Reset Password</h2>
+            <p style="color:#5f6368; margin-bottom:20px">Enter your email to receive a reset link</p>
+            
+            <input type="email" id="resetEmail" placeholder="Enter your email">
+            <p class="error-msg" id="resetError"></p>
+            <p class="success-msg" id="resetSuccess"></p>
+            
+            <button class="btn" onclick="handleReset()">Send Reset Link</button>
+            <span class="link" onclick="switchView('login')">Back to Login</span>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <header>
+            <div class="logo">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" width="40">
+                <span>Drive</span>
+            </div>
+            <div class="user-profile">
+                <span id="userEmailDisplay">user@example.com</span>
+                <div class="avatar" onclick="handleLogout()">U</div>
+            </div>
+        </header>
+        
+        <div class="main">
+            <div class="sidebar">
+                <div class="new-btn" onclick="uploadMockFile()">
+                    <span class="material-icons-outlined">add</span>
+                    <span>New</span>
+                </div>
+                <p><strong>Note:</strong> Files you create here are saved to your real database.</p>
+            </div>
+            
+            <div class="content">
+                <h3>My Drive</h3>
+                <div id="fileLoader" style="display:none; color:#5f6368; margin-top:10px;">Loading files from database...</div>
+                <div class="file-grid" id="fileGrid">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION (REPLACE THESE KEYS!)
+        // ==========================================
+        const SUPABASE_URL = 'https://woysaoheokhipqpfphpr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndveXNhb2hlb2toaXBxcGZwaHByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3NDg0NDcsImV4cCI6MjA4NTMyNDQ0N30.IuWML5hwlXmo6yONo5JaYfzsypkajyxZ29sfyjaRqcA';
+        // ==========================================
+
+        if (SUPABASE_URL === 'https://woysaoheokhipqpfphpr.supabase.co') {
+            alert("STOP! You must edit the code and put in your real Supabase URL and Key.");
+        }
+
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- AUTH STATE LISTENER ---
+        sb.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN') {
+                showDashboard(session.user);
+            } else if (event === 'SIGNED_OUT') {
+                showLogin();
+            }
+        });
+
+        // --- AUTH FUNCTIONS ---
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPass').value;
+            const errorEl = document.getElementById('loginError');
+            
+            errorEl.style.display = 'none';
+            
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                errorEl.innerText = error.message;
+                errorEl.style.display = 'block';
+            }
+        }
+
+        async function handleSignup() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPass').value;
+            const errorEl = document.getElementById('signupError');
+            const successEl = document.getElementById('signupSuccess');
+
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+
+            const { data, error } = await sb.auth.signUp({ email, password });
+
+            if (error) {
+                errorEl.innerText = error.message;
+                errorEl.style.display = 'block';
+            } else {
+                successEl.innerText = "Check your email to confirm signup!";
+                successEl.style.display = 'block';
+            }
+        }
+
+        async function handleReset() {
+            const email = document.getElementById('resetEmail').value;
+            const errorEl = document.getElementById('resetError');
+            const successEl = document.getElementById('resetSuccess');
+
+            const { data, error } = await sb.auth.resetPasswordForEmail(email);
+
+            if (error) {
+                errorEl.innerText = error.message;
+                errorEl.style.display = 'block';
+            } else {
+                successEl.innerText = "Password reset link sent to your email.";
+                successEl.style.display = 'block';
+            }
+        }
+
+        async function handleLogout() {
+            const { error } = await sb.auth.signOut();
+            if(error) console.error(error);
+            location.reload();
+        }
+
+        // --- DATABASE FUNCTIONS (REAL DATA) ---
+
+        async function loadFiles(userId) {
+            const loader = document.getElementById('fileLoader');
+            loader.style.display = 'block';
+            
+            // SELECT * FROM files WHERE user_id = current_user
+            const { data, error } = await sb
+                .from('files')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            loader.style.display = 'none';
+            
+            if (error) {
+                console.error("Error loading files:", error);
+                return;
+            }
+            
+            renderFiles(data);
+        }
+
+        async function uploadMockFile() {
+            // In a full app, this would handle binary upload. 
+            // Here, we create a Database Record to prove the DB connection works.
+            const name = prompt("Enter file name (simulating upload):", "New Document.docx");
+            if (!name) return;
+
+            const { data: { user } } = await sb.auth.getUser();
+
+            const { data, error } = await sb
+                .from('files')
+                .insert([
+                    { 
+                        name: name, 
+                        type: 'file', 
+                        size: '15 KB',
+                        user_id: user.id 
+                    }
+                ])
+                .select();
+
+            if (error) {
+                alert("Database Error: " + error.message);
+            } else {
+                // Refresh list
+                loadFiles(user.id);
+            }
+        }
+
+        function renderFiles(files) {
+            const grid = document.getElementById('fileGrid');
+            grid.innerHTML = '';
+
+            if(files.length === 0) {
+                grid.innerHTML = '<p style="color:#ccc">No files found. Click "New" to create one.</p>';
+                return;
+            }
+
+            files.forEach(file => {
+                const card = document.createElement('div');
+                card.className = 'file-card';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between">
+                        <span class="material-icons-outlined file-icon">description</span>
+                        <span class="material-icons-outlined" style="cursor:pointer" onclick="deleteFile('${file.id}')">delete</span>
+                    </div>
+                    <div style="font-weight:500; overflow:hidden; text-overflow:ellipsis">${file.name}</div>
+                    <div style="font-size:12px; color:gray">${new Date(file.created_at).toLocaleDateString()}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function deleteFile(id) {
+            if(!confirm("Delete this file from database?")) return;
+            
+            const { error } = await sb
+                .from('files')
+                .delete()
+                .eq('id', id);
+
+            if(error) alert(error.message);
+            else {
+                const { data: { user } } = await sb.auth.getUser();
+                loadFiles(user.id);
+            }
+        }
+
+        // --- UI SWITCHING ---
+        function switchView(view) {
+            ['loginForm', 'signupForm', 'resetForm'].forEach(id => document.getElementById(id).style.display = 'none');
+            document.getElementById(view + 'Form').style.display = 'block';
+        }
+
+        function showDashboard(user) {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'flex';
+            document.getElementById('userEmailDisplay').innerText = user.email;
+            
+            loadFiles(user.id);
+        }
+
+        function showLogin() {
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            switchView('login');
+        }
+
+        // Check initial session
+        (async () => {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                showDashboard(session.user);
+            } else {
+                showLogin();
+            }
+        })();
+
+    </script>
+</body>
+</html>
