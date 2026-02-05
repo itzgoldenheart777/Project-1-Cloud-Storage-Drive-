@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive - Fully Functional Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --bg-color: #f7f9fc;
+            --surface-color: #ffffff;
+            --text-main: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
+            --hover-color: #f1f3f4;
+            --sidebar-width: 256px;
+            --header-height: 64px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--surface-color); color: var(--text-main); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+        /* --- LOGIN SCREEN OVERLAY --- */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 9999; display: flex; justify-content: center; align-items: center;
+            flex-direction: column;
+        }
+        .login-box { width: 400px; padding: 40px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; }
+        .login-box img { width: 80px; margin-bottom: 20px; }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .login-btn { background: var(--primary-color); color: white; padding: 10px 24px; border: none; border-radius: 4px; font-weight: 500; cursor: pointer; margin-top: 10px; width: 100%; }
+
+        /* --- HEADER --- */
+        header { height: var(--header-height); display: flex; align-items: center; padding: 8px 20px; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
+        .logo-area { display: flex; align-items: center; width: var(--sidebar-width); }
+        .logo-area img { height: 40px; margin-right: 8px; }
+        .logo-area span { font-size: 22px; color: var(--text-secondary); }
+        
+        .search-bar { flex: 1; max-width: 720px; background: #edf2fc; height: 48px; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; margin: 0 20px; }
+        .search-bar input { border: none; background: transparent; flex: 1; height: 100%; margin-left: 10px; outline: none; font-size: 16px; }
+
+        .header-actions { display: flex; gap: 12px; align-items: center; position: relative; }
+        .icon-btn { border: none; background: none; cursor: pointer; padding: 8px; border-radius: 50%; color: var(--text-secondary); }
+        .icon-btn:hover { background-color: rgba(60,64,67,0.08); }
+        
+        .avatar { width: 32px; height: 32px; background-color: purple; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        /* PROFILE DROPDOWN */
+        #profileDropdown {
+            position: absolute; top: 50px; right: 0; width: 300px; background: white; 
+            border: 1px solid var(--border-color); border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px; display: none; z-index: 1000;
+        }
+        .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .profile-header .avatar-large { width: 60px; height: 60px; background: purple; color: white; border-radius: 50%; font-size: 24px; display: flex; align-items: center; justify-content: center; }
+
+        /* --- SIDEBAR --- */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: var(--sidebar-width); padding: 12px 0; display: flex; flex-direction: column; }
+        
+        .new-btn {
+            display: flex; align-items: center; width: fit-content; height: 48px; background: white;
+            border-radius: 24px; padding: 0 24px 0 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.1);
+            margin: 0 0 16px 16px; cursor: pointer; transition: 0.2s;
+        }
+        .new-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); background-color: #f8faff; }
+
+        .nav-item { display: flex; align-items: center; height: 40px; padding-left: 24px; border-radius: 0 20px 20px 0; cursor: pointer; color: var(--text-main); font-size: 14px; margin-right: 12px; }
+        .nav-item.active { background-color: #e8f0fe; color: var(--primary-color); font-weight: 500; }
+        .nav-item:hover:not(.active) { background-color: var(--hover-color); }
+        .nav-item .material-icons-outlined { margin-right: 12px; font-size: 20px; }
+
+        /* --- CONTENT --- */
+        .content { flex: 1; background-color: var(--surface-color); border-radius: 16px 16px 0 0; padding: 16px; overflow-y: auto; border-top: 1px solid var(--border-color); border-left: 1px solid var(--border-color); }
+        
+        .section-title { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin: 20px 0 12px 0; }
+        
+        /* FILES LIST */
+        .file-list-header { display: grid; grid-template-columns: 2fr 1fr 1fr 50px; padding: 8px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+        .file-row { display: grid; grid-template-columns: 2fr 1fr 1fr 50px; padding: 12px 16px; border-bottom: 1px solid #f1f3f4; align-items: center; font-size: 13px; cursor: pointer; position: relative; }
+        .file-row:hover { background-color: #e8f0fe; }
+        .file-name-cell { display: flex; align-items: center; color: var(--text-main); }
+        .file-name-cell .material-icons-outlined { margin-right: 12px; font-size: 20px; color: var(--text-secondary); }
+        
+        /* MENU (3 DOTS) */
+        .menu-btn { border: none; background: transparent; cursor: pointer; border-radius: 50%; padding: 4px; opacity: 0; }
+        .file-row:hover .menu-btn { opacity: 1; }
+        .menu-btn:hover { background: rgba(0,0,0,0.1); }
+
+        .context-menu {
+            position: absolute; right: 50px; top: 30px; background: white; 
+            border: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            border-radius: 4px; z-index: 100; display: none; width: 150px;
+        }
+        .context-menu div { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .context-menu div:hover { background: #f1f3f4; }
+        
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <div class="login-box">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" alt="Logo">
+            <h2>Sign in</h2>
+            <p style="margin-bottom: 20px; color: #5f6368;">to continue to Drive</p>
+            <input type="email" id="emailInput" placeholder="Email or phone" value="user@example.com">
+            <input type="password" id="passInput" placeholder="Password" value="password123">
+            <button class="login-btn" onclick="performLogin()">Next</button>
+        </div>
+    </div>
+
+    <div id="appContainer" style="display:none; height: 100%; flex-direction: column;">
+        
+        <header>
+            <div class="logo-area">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo_%282020%29.svg" alt="Drive Logo">
+                <span>Drive</span>
+            </div>
+            <div class="search-bar">
+                <span class="material-icons-outlined" style="color: #5f6368;">search</span>
+                <input type="text" placeholder="Search in Drive" id="searchInput" onkeyup="filterFiles()">
+                <span class="material-icons-outlined icon-btn">tune</span>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn"><span class="material-icons-outlined">help_outline</span></button>
+                <button class="icon-btn"><span class="material-icons-outlined">settings</span></button>
+                <div class="avatar" onclick="toggleProfile()">U</div>
+                <div id="profileDropdown">
+                    <div class="profile-header">
+                        <div class="avatar-large">U</div>
+                        <div>
+                            <div style="font-weight: 500;" id="profileName">User Name</div>
+                            <div style="font-size: 12px; color: gray;" id="profileEmail">user@example.com</div>
+                        </div>
+                    </div>
+                    <button class="login-btn" style="background: white; color: #333; border: 1px solid #ccc;" onclick="location.reload()">Sign out</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <aside class="sidebar">
+                <div class="new-btn" onclick="document.getElementById('fileUploader').click()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Plus_symbol.svg" width="24" alt="+">
+                    <span>New</span>
+                </div>
+                <input type="file" id="fileUploader" hidden onchange="handleFileUpload(event)">
+
+                <div class="nav-item active"><span class="material-icons-outlined">hard_drive</span>My Drive</div>
+                <div class="nav-item"><span class="material-icons-outlined">devices</span>Computers</div>
+                <div class="nav-item"><span class="material-icons-outlined">people</span>Shared with me</div>
+                <div class="nav-item"><span class="material-icons-outlined">schedule</span>Recent</div>
+                <div class="nav-item"><span class="material-icons-outlined">star_border</span>Starred</div>
+                <div class="nav-item"><span class="material-icons-outlined">delete</span>Trash</div>
+            </aside>
+
+            <main class="content">
+                <div class="section-title">Suggested</div>
+                
+                <div class="section-title">Files</div>
+                <div class="file-list-header">
+                    <div>Name</div>
+                    <div>Owner</div>
+                    <div>Last Modified</div>
+                    <div></div>
+                </div>
+
+                <div id="fileListContainer">
+                    </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STATE ---
+        // We start with some mock data. 
+        // In a real app, this comes from a database.
+        let fileData = [
+            { id: 1, name: "Project_Proposal.pdf", owner: "me", date: "Feb 20, 2024", type: "pdf", isMock: true },
+            { id: 2, name: "Budget_2024.xlsx", owner: "me", date: "Feb 18, 2024", type: "sheet", isMock: true },
+            { id: 3, name: "Site_Mockup.png", owner: "John", date: "Jan 10, 2024", type: "image", isMock: true }
+        ];
+
+        let currentUser = {
+            name: "Demo User",
+            email: "demo@gmail.com"
+        };
+
+        // --- LOGIN FUNCTION ---
+        function performLogin() {
+            const email = document.getElementById('emailInput').value;
+            if(email) {
+                currentUser.email = email;
+                currentUser.name = email.split('@')[0];
+                
+                document.getElementById('profileName').innerText = currentUser.name;
+                document.getElementById('profileEmail').innerText = currentUser.email;
+                
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+            }
+        }
+
+        // --- RENDER FILES ---
+        const listContainer = document.getElementById('fileListContainer');
+
+        function renderFiles(data = fileData) {
+            listContainer.innerHTML = '';
+            
+            data.forEach((file, index) => {
+                const row = document.createElement('div');
+                row.className = 'file-row';
+                
+                // Determine Icon
+                let icon = 'description';
+                let color = '#5f6368';
+                if(file.name.endsWith('.png') || file.name.endsWith('.jpg')) { icon = 'image'; color = '#d93025'; }
+                if(file.name.endsWith('.pdf')) { icon = 'picture_as_pdf'; color = '#d93025'; }
+                if(file.name.endsWith('.xlsx')) { icon = 'table_view'; color = '#188038'; }
+
+                row.innerHTML = `
+                    <div class="file-name-cell">
+                        <span class="material-icons-outlined" style="color: ${color}">${icon}</span>
+                        <span>${file.name}</span>
+                    </div>
+                    <div>${file.owner}</div>
+                    <div>${file.date}</div>
+                    <div style="position:relative;">
+                        <button class="menu-btn" onclick="toggleMenu(${file.id})">
+                            <span class="material-icons-outlined">more_vert</span>
+                        </button>
+                        <div id="menu-${file.id}" class="context-menu">
+                            <div onclick="renameFile(${file.id})">
+                                <span class="material-icons-outlined">edit</span> Rename
+                            </div>
+                            <div onclick="downloadFile(${file.id})">
+                                <span class="material-icons-outlined">download</span> Download
+                            </div>
+                            <div onclick="deleteFile(${file.id})" style="color:red;">
+                                <span class="material-icons-outlined">delete</span> Remove
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        // --- FILE OPERATIONS ---
+
+        // 1. Upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const newFile = {
+                id: Date.now(), // Unique ID
+                name: file.name,
+                owner: "me",
+                date: new Date().toLocaleDateString(),
+                type: "file",
+                fileObj: file, // Store the actual file object for downloading later
+                isMock: false
+            };
+
+            fileData.unshift(newFile); // Add to top
+            renderFiles();
+            
+            // Show a simple toast/alert (simulated)
+            alert(`Uploading ${file.name}... Complete.`);
+        }
+
+        // 2. Toggle Context Menu
+        let activeMenuId = null;
+        function toggleMenu(id) {
+            // Close existing open menu
+            if(activeMenuId && activeMenuId !== id) {
+                document.getElementById(`menu-${activeMenuId}`).style.display = 'none';
+            }
+            
+            const menu = document.getElementById(`menu-${id}`);
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                activeMenuId = null;
+            } else {
+                menu.style.display = 'block';
+                activeMenuId = id;
+            }
+        }
+        
+        // Close menu if clicking elsewhere
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.menu-btn') && !e.target.closest('.context-menu')) {
+                if(activeMenuId) {
+                    document.getElementById(`menu-${activeMenuId}`).style.display = 'none';
+                    activeMenuId = null;
+                }
+            }
+        });
+
+        // 3. Rename
+        function renameFile(id) {
+            const file = fileData.find(f => f.id === id);
+            const newName = prompt("Rename file:", file.name);
+            if (newName && newName.trim() !== "") {
+                file.name = newName;
+                renderFiles();
+            }
+            toggleMenu(id); // Close menu
+        }
+
+        // 4. Delete
+        function deleteFile(id) {
+            if(confirm("Move this file to trash?")) {
+                fileData = fileData.filter(f => f.id !== id);
+                renderFiles();
+            }
+        }
+
+        // 5. Download
+        function downloadFile(id) {
+            const file = fileData.find(f => f.id === id);
+            
+            if (file.isMock) {
+                alert("This is a demo file. Only files you uploaded in this session can be real-downloaded.");
+            } else {
+                // Create a temporary link to download the Blob
+                const url = URL.createObjectURL(file.fileObj);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            toggleMenu(id);
+        }
+
+        // --- SEARCH ---
+        function filterFiles() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = fileData.filter(f => f.name.toLowerCase().includes(term));
+            renderFiles(filtered);
+        }
+
+        // --- PROFILE ---
+        function toggleProfile() {
+            const p = document.getElementById('profileDropdown');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Initial Render
+        renderFiles();
+
+    </script>
+</body>
+</html>
